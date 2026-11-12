@@ -23,7 +23,7 @@ export default function DashboardLayout({
       <div className="flex-1 flex flex-col min-w-0 lg:pl-72">
         <Topbar onMenuClick={() => setIsMobileMenuOpen(true)} />
 
-        <main className="flex-1 w-full pt-20 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+        <main className="flex-1 w-full px-4 pt-28 pb-4 sm:px-6 sm:pt-28 sm:pb-6 lg:px-8 lg:pt-28 lg:pb-8 max-w-7xl mx-auto">
           {children}
         </main>
       </div>
