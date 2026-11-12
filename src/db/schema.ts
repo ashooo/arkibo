@@ -1,4 +1,5 @@
-import { index, pgTable, primaryKey, text, timestamp } from "drizzle-orm/pg-core";
+import type { AccountProfile } from "@/lib/account";
+import { index, jsonb, pgTable, primaryKey, text, timestamp } from "drizzle-orm/pg-core";
 
 export const announcements = pgTable("announcements", {
   source: text().notNull(),
@@ -17,3 +18,16 @@ export const announcementSync = pgTable("announcement_sync", {
   source: text().primaryKey(),
   synced_at: timestamp({ withTimezone: true }).notNull(),
 });
+
+export const accounts = pgTable("accounts", {
+  id: text().primaryKey(),
+  email: text().notNull().unique(),
+  password_hash: text().notNull(),
+  profile: jsonb().$type<AccountProfile>(),
+});
+
+export const accountSessions = pgTable("account_sessions", {
+  token_hash: text().primaryKey(),
+  account_id: text().notNull().references(() => accounts.id, { onDelete: "cascade" }),
+  expires_at: timestamp({ withTimezone: true }).notNull(),
+}, (table) => [index("account_sessions_expiry_idx").on(table.expires_at)]);

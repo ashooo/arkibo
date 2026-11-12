@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Menu } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { useStudent } from "@/lib/student-context";
 
 export default function DashboardLayout({
   children,
@@ -10,6 +12,19 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const pathname = usePathname();
+  const router = useRouter();
+  const { user, accountLoading } = useStudent();
+  const requiresProfile = pathname !== "/notifications";
+
+  useEffect(() => {
+    if (requiresProfile && !accountLoading && !user?.profile) router.replace("/account");
+  }, [requiresProfile, accountLoading, user, router]);
+
+  if (requiresProfile && (accountLoading || !user?.profile)) {
+    return <p role="status" className="p-6">{accountLoading ? "Checking your session…" : "Opening your account…"}</p>;
+  }
 
   return (
     <div className="portal-frame flex bg-surface dark:bg-dark-bg">

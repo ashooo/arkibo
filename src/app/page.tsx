@@ -13,20 +13,26 @@ const tracks = [
 
 export default function OnboardingLandingPage() {
   const router = useRouter();
-  const { setApplicationType } = useStudent();
+  const { setApplicationType, user, accountLoading } = useStudent();
 
   function selectTrack(type: ApplicationType) {
+    if (!user?.profile) {
+      router.push("/account");
+      return;
+    }
     setApplicationType(type);
     router.push("/dashboard");
   }
 
   return (
     <div className="min-h-dvh bg-surface dark:bg-dark-bg">
-      <header className="flex min-h-16 flex-wrap items-center justify-between gap-2 border-b border-slate-border bg-white px-4 py-2 dark:border-dark-border dark:bg-dark-surface sm:px-8">
+      <header className="flex min-h-16 flex-wrap items-center justify-between gap-2 border-b border-slate-border bg-surface-lowest px-4 py-2 dark:border-dark-border dark:bg-dark-surface sm:px-8">
         <span className="flex items-center gap-2 text-lg font-semibold"><GraduationCap aria-hidden="true" className="text-primary" size={24} />ScholarReady</span>
         <div className="flex items-center gap-3">
+          <Link href="/notifications" className="text-sm font-semibold text-primary hover:underline">Announcements</Link>
+          <Link href="/account" className="text-sm font-semibold text-primary hover:underline">{user ? "Profile" : "Sign in or create an account"}</Link>
           <ThemeToggle />
-          <Link href="/dashboard" className="inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-sm font-semibold text-primary hover:bg-primary-soft dark:hover:bg-dark-accentSurface">Open portal <ArrowRight aria-hidden="true" size={16} /></Link>
+          {user?.profile && <Link href="/dashboard" className="inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-sm font-semibold text-primary hover:bg-primary-soft dark:hover:bg-dark-accentSurface">Open portal <ArrowRight aria-hidden="true" size={16} /></Link>}
         </div>
       </header>
       <main className="mx-auto max-w-4xl space-y-7 px-4 py-10 sm:px-8 sm:py-16">
@@ -38,7 +44,7 @@ export default function OnboardingLandingPage() {
         </div>
         <div className="grid gap-5 sm:grid-cols-2">
           {tracks.map(({ type, title, description, Icon, tone }) => (
-            <button type="button" key={type} className="workspace-card text-left" onClick={() => selectTrack(type)}>
+            <button type="button" disabled={accountLoading} key={type} className="workspace-card text-left" onClick={() => selectTrack(type)}>
               <span className="workspace-cover" data-tone={tone}>
                 <span className="text-xl font-semibold">{title}</span><Icon aria-hidden="true" size={30} />
               </span>

@@ -2,6 +2,9 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 
+import { accountRequest, schoolName, type AccountUser } from "@/lib/account";
+import { toast } from "sonner";
+
 export type ApplicationType = "new" | "renewal";
 
 export interface StudentProfile {
@@ -27,6 +30,9 @@ export const DEMO_STUDENT: StudentProfile = {
 };
 
 interface StudentContextType {
+  user: AccountUser | null;
+  setUser: (user: AccountUser | null) => void;
+  accountLoading: boolean;
   applicationType: ApplicationType;
   setApplicationType: (type: ApplicationType) => void;
   student: StudentProfile;
@@ -37,17 +43,31 @@ const StudentContext = createContext<StudentContextType | undefined>(undefined);
 
 export function StudentProvider({ children }: { children: React.ReactNode }) {
   const [applicationType, setAppTypeState] = useState<ApplicationType>("renewal");
-  const [mounted, setMounted] = useState(false);
+  const [user, setUser] = useState<AccountUser | null>(null);
+  const [accountLoading, setAccountLoading] = useState(true);
+  const profile = user?.profile;
+  const currentTrack: ApplicationType = profile?.track ?? applicationType;
 
   useEffect(() => {
-    setMounted(true);
+    let active = true;
+    void accountRequest().then((account) => {
+      if (active) setUser(account);
+    }).catch(() => {}).finally(() => {
+      if (active) setAccountLoading(false);
+    });
     const saved = localStorage.getItem("scholarready_app_type") as ApplicationType | null;
     if (saved === "new" || saved === "renewal") {
       setAppTypeState(saved);
     }
+    return () => { active = false; };
   }, []);
 
   const setApplicationType = (type: ApplicationType) => {
+    if (profile) {
+      void accountRequest("POST", { action: "track", track: type }).then(setUser)
+        .catch(() => toast.error("Couldn’t switch your application track. Try again."));
+      return;
+    }
     setAppTypeState(type);
     if (typeof window !== "undefined") {
       localStorage.setItem("scholarready_app_type", type);
@@ -55,16 +75,28 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
   };
 
   const toggleApplicationType = () => {
-    const next = applicationType === "renewal" ? "new" : "renewal";
+    const next = currentTrack === "renewal" ? "new" : "renewal";
     setApplicationType(next);
   };
 
   return (
     <StudentContext.Provider
       value={{
-        applicationType: mounted ? applicationType : "renewal",
+        user,
+        setUser,
+        accountLoading,
+        applicationType: currentTrack,
         setApplicationType,
-        student: DEMO_STUDENT,
+        student: user ? {
+          id: user.id,
+          name: profile?.name ?? "Student",
+          school: schoolName,
+          program: "",
+          studentNumber: "",
+          yearLevel: profile?.yearLevel ?? "",
+          status: "Applicant",
+          term: "",
+        } : DEMO_STUDENT,
         toggleApplicationType,
       }}
     >
