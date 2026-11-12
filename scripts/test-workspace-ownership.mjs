@@ -57,6 +57,49 @@ try {
     await request(i, "/api/grades", "POST", { termId: terms[i], sourceDocumentId: docs[other], subjectCode: "TEST", subjectName: "Test", grade: "1" }, 404);
     await request(i, `/api/grades?termId=${terms[i]}`);
   }
+  const customIds = [];
+  for (let i = 0; i < 2; i++) {
+    const initial = await request(i, "/api/checklist?type=new");
+    assert.deepEqual(initial.items, {});
+    const custom = await request(i, "/api/checklist", "POST", { applicationType: "new", title: "Synthetic extra requirement", description: "Test only" }, 201);
+    customIds[i] = custom.requirement.id;
+  }
+  for (let i = 0; i < 2; i++) {
+    const other = 1 - i;
+    const body = { applicationType: "new" };
+    await request(i, "/api/checklist/new-report-card", "PATCH", { ...body, notes: "Synthetic note" });
+    let view = await request(i, "/api/checklist?type=new");
+    assert.equal(view.items["new-report-card"].notes, "Synthetic note");
+    await request(i, "/api/checklist/new-report-card/documents", "POST", { ...body, documentId: docs[i] });
+    view = await request(i, "/api/checklist?type=new");
+    assert.equal(view.items["new-report-card"].status, "uploaded");
+    assert.deepEqual(view.items["new-report-card"].documentIds, [docs[i]]);
+    await request(i, "/api/checklist/new-report-card", "PATCH", { ...body, documentIds: [docs[other]] }, 404);
+    view = await request(i, "/api/checklist?type=new");
+    assert.deepEqual(view.items["new-report-card"].documentIds, [docs[i]], "Rejected replacements must preserve existing attachments");
+    await request(i, `/api/checklist/${customIds[other]}`, "PATCH", { ...body, notes: "Forbidden" }, 404);
+    await request(i, "/api/checklist/new-report-card/documents", "DELETE", { ...body, documentId: docs[other] }, 404);
+    await request(i, "/api/checklist/new-report-card", "PATCH", { ...body, status: "prepared" });
+    await request(i, "/api/checklist", "PATCH", { ...body, deadline: "2099-02-28" });
+    await request(i, "/api/checklist", "PATCH", { ...body, deadline: "2099-02-30" }, 400);
+    const summary = await request(i, "/api/workspace/summary?type=new");
+    assert.deepEqual(summary.checklist, { total: 5, prepared: 1, deadline: "2099-02-28" });
+    assert.equal(summary.documents.total, 1);
+    assert.equal(summary.grades.total, 1);
+    const renewal = await request(i, "/api/checklist?type=renewal");
+    assert.deepEqual(renewal, { items: {}, customTemplates: [], deadline: "" });
+    await request(i, "/api/checklist/new-report-card", "PATCH", { applicationType: "renewal", notes: "Wrong track" }, 404);
+    await request(i, "/api/checklist/new-report-card/documents", "DELETE", { ...body, documentId: docs[i] });
+    view = await request(i, "/api/checklist?type=new");
+    assert.equal(view.items["new-report-card"].status, "prepared", "Removing an attachment must preserve manual verification");
+    assert.deepEqual(view.items["new-report-card"].documentIds, []);
+    await request(i, "/api/checklist/new-residency/documents", "POST", { ...body, documentId: docs[i] });
+    await request(i, "/api/checklist/new-residency/documents", "DELETE", { ...body, documentId: docs[i] });
+    view = await request(i, "/api/checklist?type=new");
+    assert.equal(view.items["new-residency"].status, "missing");
+    await request(i, "/api/checklist/new-residency", "PATCH", { ...body, status: "invalid" }, 400);
+    await request(i, "/api/checklist?type=invalid", "GET", undefined, 400);
+  }
   console.log(`${checks} authenticated ownership checks passed.`);
 } finally {
   await db.begin(async (tx) => {

@@ -4,7 +4,8 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useStudent } from "@/lib/student-context";
 import { AccountWorkspace } from "@/features/account-workspace";
-import { requirementTemplates, type RequirementTemplate } from "@/data/requirements";
+import { requirementTemplates } from "@/data/requirements";
+import { useChecklist, type ItemState } from "@/features/checklist/use-checklist";
 import type { ChecklistStatus, StoredDocument } from "@/types/shared";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,8 +13,6 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { CalendarDays, Check, CheckSquare, ChevronDown, FileText, GraduationCap, IdCard, LoaderCircle, MapPin, Paperclip, Plus, ReceiptText, StickyNote, Unlink, Upload, X } from "lucide-react";
 
-type ItemState = { status: ChecklistStatus; notes: string; documentIds: string[] };
-type SavedState = Record<string, ItemState>;
 type FilterMode = "all" | "to_do" | "prepared" | "attention";
 
 const statusOptions: { value: ChecklistStatus; label: string; variant: "neutral" | "primary" | "success" | "warning"; bar: string }[] = [
@@ -25,19 +24,6 @@ const statusOptions: { value: ChecklistStatus; label: string; variant: "neutral"
 const requirementIcons = [GraduationCap, GraduationCap, IdCard, MapPin, ReceiptText];
 const focusRing = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-dark-card";
 
-function storageKey(type: string, accountId: string) { return `scholarready_checklist_${accountId}_${type}`; }
-function customRequirementsKey(type: string, accountId: string) { return `scholarready_custom_requirements_${accountId}_${type}`; }
-function readSaved<T>(key: string, fallback: T): T {
-  try { const value = localStorage.getItem(key); return value ? JSON.parse(value) as T : fallback; }
-  catch { return fallback; }
-}
-function defaultState(type: string): SavedState {
-  return Object.fromEntries(requirementTemplates.filter((item) => item.applicationType === type).map((item) => [item.id, {
-    status: "missing",
-    notes: "",
-    documentIds: [],
-  }]));
-}
 
 export default function ChecklistPage() {
   const { applicationType, user } = useStudent();
@@ -45,24 +31,15 @@ export default function ChecklistPage() {
 }
 
 function ChecklistWorkspace() {
-  const { applicationType, user } = useStudent();
-  const accountId = user?.id ?? "";
-  const deadlineKey = `scholarready_deadline_${accountId}_${applicationType}`;
+  const { applicationType } = useStudent();
+  const { items, customTemplates, deadline, loaded, pending, error, updateItem, saveDeadline, addRequirement: saveRequirement } = useChecklist(applicationType);
   const isRenewal = applicationType === "renewal";
-  const [items, setItems] = useState<SavedState>(() => ({ ...defaultState(applicationType), ...readSaved<SavedState>(storageKey(applicationType, accountId), {}) }));
   const [documents, setDocuments] = useState<StoredDocument[]>([]);
-  const loaded = true;
   const [filter, setFilter] = useState<FilterMode>("all");
   const [attachTo, setAttachTo] = useState<string | null>(null);
   const [replacingAttachment, setReplacingAttachment] = useState(false);
   const [loadingDocs, setLoadingDocs] = useState(false);
-  const [deadline, setDeadline] = useState(() => { try { return localStorage.getItem(deadlineKey) ?? ""; } catch { return ""; } });
-  const deadlineLoaded = true;
   const [openNotes, setOpenNotes] = useState<Set<string>>(new Set());
-  const [customTemplates, setCustomTemplates] = useState<RequirementTemplate[]>(() => {
-    const saved = readSaved<RequirementTemplate[]>(customRequirementsKey(applicationType, accountId), []);
-    return Array.isArray(saved) ? saved.filter((item) => item && typeof item.id === "string" && typeof item.title === "string" && item.applicationType === applicationType) : [];
-  });
   const [customTitle, setCustomTitle] = useState("");
   const [customDescription, setCustomDescription] = useState("");
   const [showAddRequirement, setShowAddRequirement] = useState(false);
@@ -102,15 +79,7 @@ function ChecklistWorkspace() {
     return () => window.removeEventListener("keydown", onKey);
   }, [attachTo, showAddRequirement]);
 
-  const persist = (next: SavedState) => {
-    setItems(next);
-    try { localStorage.setItem(storageKey(applicationType, accountId), JSON.stringify(next)); }
-    catch { toast.error("Could not save checklist changes in this browser."); }
-  };
   const getItem = (id: string): ItemState => items[id] ?? { status: "missing", notes: "", documentIds: [] };
-  const updateItem = (id: string, update: Partial<ItemState>) => {
-    persist({ ...items, [id]: { ...getItem(id), ...update } });
-  };
   const totals = templates.reduce((counts, template) => {
     counts[getItem(template.id).status] += 1;
     return counts;
@@ -134,36 +103,16 @@ function ChecklistWorkspace() {
     return true;
   });
 
-  const saveDeadline = (value: string) => {
-    setDeadline(value);
-    try {
-      if (value) localStorage.setItem(deadlineKey, value);
-      else localStorage.removeItem(deadlineKey);
-    } catch { toast.error("Could not save the deadline in this browser."); }
-  };
-  const addRequirement = (event: React.FormEvent<HTMLFormElement>) => {
+  const addRequirement = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const title = customTitle.trim();
     const description = customDescription.trim();
     if (!title) return;
-    const customForTrack = customTemplates.filter((item) => item.applicationType === applicationType);
-    const requirement: RequirementTemplate = {
-      id: `custom-${crypto.randomUUID()}`,
-      applicationType,
-      title,
-      description: description || "Additional requirement added to your checklist.",
-      sortOrder: requirementTemplates.filter((item) => item.applicationType === applicationType).length + customForTrack.length + 1,
-    };
-    const nextCustom = [...customTemplates, requirement];
-    try {
-      localStorage.setItem(customRequirementsKey(applicationType, accountId), JSON.stringify(nextCustom.filter((item) => item.applicationType === applicationType)));
-      setCustomTemplates(nextCustom);
+    if (await saveRequirement(title, description)) {
       setCustomTitle("");
       setCustomDescription("");
       setShowAddRequirement(false);
       toast.success("Requirement added to your checklist");
-    } catch {
-      toast.error("Could not save this requirement in your browser.");
     }
   };
   const resolveNext = () => {
@@ -182,17 +131,16 @@ function ChecklistWorkspace() {
     await fetchDocuments();
     setLoadingDocs(false);
   };
-  const attachDocument = (document: StoredDocument) => {
+  const attachDocument = async (document: StoredDocument) => {
     if (!attachTo) return;
     const current = getItem(attachTo);
     const existing = replacingAttachment ? [] : current.documentIds;
-    if (!existing.includes(document.id)) updateItem(attachTo, { documentIds: [...existing, document.id] });
+    if (!existing.includes(document.id) && !await updateItem(attachTo, { documentIds: [...existing, document.id] })) return;
     setAttachTo(null);
     toast.success(`Document attached: ${document.originalName}`);
   };
-  const setStatus = (id: string, status: ChecklistStatus) => {
-    updateItem(id, { status });
-    if (status === "prepared") toast.success("Requirement marked as prepared");
+  const setStatus = async (id: string, status: ChecklistStatus) => {
+    if (await updateItem(id, { status }) && status === "prepared") toast.success("Requirement marked as prepared");
   };
   const toggleNotes = (id: string) => {
     setOpenNotes((current) => {
@@ -203,7 +151,10 @@ function ChecklistWorkspace() {
   };
   const filters: [FilterMode, string][] = [["all", "All"], ["to_do", "To do"], ["prepared", "Prepared"], ["attention", "Needs attention"]];
 
+  if (!loaded) return <p role="status">{error || "Loading your saved checklist…"}</p>;
+
   return <div className="flex flex-col gap-6">
+    <p role="status" className="text-sm text-slate-500">{error || (!loaded ? "Loading checklist…" : pending ? "Saving changes…" : "Checklist saved to your account.")}</p>
     <header className="workspace-banner">
       <div>
         <div className="mb-1 flex flex-wrap items-center gap-2">
@@ -248,8 +199,8 @@ function ChecklistWorkspace() {
         <p className="mt-3 text-xl font-extrabold text-on-surface dark:text-slate-100">{deadline ? new Date(`${deadline}T00:00:00`).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" }) : "Deadline not yet announced"}</p>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{daysRemaining === null ? "Set a deadline once the scholarship office confirms it." : daysRemaining < 0 ? "This date has passed. Check with the scholarship office for updates." : daysRemaining === 0 ? "The deadline is today. Review your remaining items." : `${daysRemaining} day${daysRemaining === 1 ? "" : "s"} remaining. Keep working through your checklist.`}</p>
         <label className="mt-4 block text-xs font-semibold text-slate-600 dark:text-slate-300" htmlFor="scholarship-deadline">Deadline (use a verified date)</label>
-        <input id="scholarship-deadline" type="date" value={deadline} onChange={(event) => saveDeadline(event.target.value)} disabled={!deadlineLoaded} className={`mt-1 min-h-11 w-full rounded-lg border border-slate-border bg-white px-3 text-sm text-slate-700 dark:border-dark-border dark:bg-dark-card dark:text-slate-200 ${focusRing}`} />
-        <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">Saved in this browser only. Not an official date.</p>
+        <input id="scholarship-deadline" type="date" value={deadline} onChange={(event) => void saveDeadline(event.target.value)} disabled={!loaded} className={`mt-1 min-h-11 w-full rounded-lg border border-slate-border bg-white px-3 text-sm text-slate-700 dark:border-dark-border dark:bg-dark-card dark:text-slate-200 ${focusRing}`} />
+        <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">Saved to your account. Use a date confirmed by the scholarship office.</p>
         <Button variant="primary" className="mt-4 min-h-11 w-full" onClick={resolveNext} disabled={!incompleteRequirement}>{incompleteRequirement ? "Resolve Now" : "All requirements prepared"}</Button>
         {incompleteRequirement && <p className="mt-2 truncate text-xs text-slate-500 dark:text-slate-400">Next: {incompleteRequirement.title}</p>}
       </Card>
@@ -314,7 +265,7 @@ function ChecklistWorkspace() {
                 {item.documentIds.map((id) => {
                   const doc = documents.find((document) => document.id === id);
                   const name = doc?.originalName ?? `Document ${id.slice(0, 8)}`;
-                  return <span key={id} className="inline-flex max-w-full items-center gap-1 rounded-full border border-slate-200 bg-slate-50 py-0.5 pl-3 pr-1 text-xs dark:border-dark-border dark:bg-dark-cardAlt"><FileText className="h-3.5 w-3.5 shrink-0 text-slate-500" aria-hidden="true" /><a href={`/api/documents/${encodeURIComponent(id)}`} target="_blank" rel="noreferrer" className={`min-h-8 inline-flex max-w-[14rem] items-center truncate rounded px-1 font-medium text-primary hover:underline ${focusRing}`} aria-label={`Preview or open ${name}`}>{name}</a><button type="button" aria-label={`Remove ${name}`} title="Remove" className={`flex h-8 w-8 items-center justify-center rounded-full text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 ${focusRing}`} onClick={() => updateItem(template.id, { documentIds: item.documentIds.filter((documentId) => documentId !== id) })}><Unlink className="h-3.5 w-3.5" /></button></span>;
+                  return <span key={id} className="inline-flex max-w-full items-center gap-1 rounded-full border border-slate-200 bg-slate-50 py-0.5 pl-3 pr-1 text-xs dark:border-dark-border dark:bg-dark-cardAlt"><FileText className="h-3.5 w-3.5 shrink-0 text-slate-500" aria-hidden="true" /><a href={`/api/documents/${encodeURIComponent(id)}/file`} target="_blank" rel="noreferrer" className={`min-h-8 inline-flex max-w-[14rem] items-center truncate rounded px-1 font-medium text-primary hover:underline ${focusRing}`} aria-label={`Preview or open ${name}`}>{name}</a><button type="button" aria-label={`Remove ${name}`} title="Remove" className={`flex h-8 w-8 items-center justify-center rounded-full text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 ${focusRing}`} onClick={() => updateItem(template.id, { documentIds: item.documentIds.filter((documentId) => documentId !== id) })}><Unlink className="h-3.5 w-3.5" /></button></span>;
                 })}
                 {item.documentIds.length === 0 && <span className="text-xs text-slate-500">No document attached</span>}
               </div>
