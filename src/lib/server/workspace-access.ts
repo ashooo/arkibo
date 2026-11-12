@@ -40,6 +40,7 @@ export async function workspaceAccess(request: Request, provision = false): Prom
     if (termId && !await ownsTerm(termId)) return fail("Academic term not found.", 404);
     if (req.headers.get("content-type")?.startsWith("application/json")) {
       const body = await request.clone().json();
+      if (!body || typeof body !== "object" || Array.isArray(body)) return fail("Expected a JSON object.", 400);
       if (body.studentId && body.studentId !== studentId) return fail("Student profile not found.", 404);
       if (body.termId && !await ownsTerm(body.termId)) return fail("Academic term not found.", 404);
       for (const id of [body.documentId, body.sourceDocumentId].filter(Boolean)) {
@@ -53,5 +54,8 @@ export async function workspaceAccess(request: Request, provision = false): Prom
       }
     }
     return { studentId };
-  } catch { return fail("Account workspace unavailable. Check database alignment.", 503); }
+  } catch (error) {
+    if (error instanceof SyntaxError) return fail("Invalid JSON request.", 400);
+    return fail("Account workspace unavailable. Check database alignment.", 503);
+  }
 }
