@@ -1,10 +1,9 @@
 import Link from "next/link";
-import { ArrowUpRight, Bell, ClipboardList, FolderArchive, GraduationCap, ScanText } from "lucide-react";
+import { ArrowUpRight, Bell, ClipboardList, FolderArchive, GraduationCap } from "lucide-react";
 
 const workspaces = [
   ["Checklist", "/checklist", "Review your scholarship requirements.", ClipboardList, "blue"],
-  ["Scanner & OCR", "/scanner", "Open the document scanning workspace.", ScanText, "green"],
-  ["My Documents", "/documents", "Go to your scholarship document library.", FolderArchive, "purple"],
+  ["My Documents", "/documents", "Add documents, extract text, and find your saved files.", FolderArchive, "purple"],
   ["Grades", "/grades", "Open your academic records workspace.", GraduationCap, "gold"],
   ["Announcements", "/notifications", "Browse scholarship, allowance, and SPES notices.", Bell, "blue"],
 ] as const;

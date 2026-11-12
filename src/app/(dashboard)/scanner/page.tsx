@@ -1,6 +1,5 @@
-import { ScannerWorkspace } from "@/features/scanner/scanner-workspace";
+import { redirect } from "next/navigation";
 
 export default function ScannerPage() {
-  return <AccountWorkspace><ScannerWorkspace /></AccountWorkspace>;
+  redirect("/documents?add=1");
 }
-import { AccountWorkspace } from "@/features/account-workspace";

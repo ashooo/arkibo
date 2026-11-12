@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Bell, ClipboardList, FolderArchive, GraduationCap, House, Landmark, LogOut, ScanText, X } from "lucide-react";
+import { Bell, ClipboardList, FolderArchive, GraduationCap, House, Landmark, LogOut, X } from "lucide-react";
 import { toast } from "sonner";
 import { accountRequest } from "@/lib/account";
 import { cn } from "@/lib/utils";
@@ -15,7 +15,6 @@ const navigation = [
   { href: "/dashboard", label: "Home", Icon: House },
   { href: "/notifications", label: "Announcements", Icon: Bell },
   { href: "/checklist", label: "Checklist", Icon: ClipboardList },
-  { href: "/scanner", label: "Scanner & OCR", Icon: ScanText },
   { href: "/documents", label: "My Documents", Icon: FolderArchive },
   { href: "/grades", label: "Grades", Icon: GraduationCap },
 ];
