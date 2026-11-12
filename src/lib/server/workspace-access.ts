@@ -11,7 +11,7 @@ const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** Authenticate every workspace API, including direct file and OCR requests. */
 export async function workspaceAccess(request: Request, provision = false): Promise<Access> {
-  const req = new NextRequest(request);
+  const req = new NextRequest(request.url, { headers: request.headers });
   const origin = req.headers.get("origin");
   if (request.method !== "GET" && origin && origin !== req.nextUrl.origin) return fail("Invalid request origin.", 403);
   const token = req.cookies.get("scholarready_session")?.value;
@@ -39,7 +39,7 @@ export async function workspaceAccess(request: Request, provision = false): Prom
     const termId = req.nextUrl.searchParams.get("termId");
     if (termId && !await ownsTerm(termId)) return fail("Academic term not found.", 404);
     if (req.headers.get("content-type")?.startsWith("application/json")) {
-      const body = await req.clone().json();
+      const body = await request.clone().json();
       if (body.studentId && body.studentId !== studentId) return fail("Student profile not found.", 404);
       if (body.termId && !await ownsTerm(body.termId)) return fail("Academic term not found.", 404);
       for (const id of [body.documentId, body.sourceDocumentId].filter(Boolean)) {
