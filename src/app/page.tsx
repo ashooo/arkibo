@@ -8,50 +8,50 @@ import {
   GraduationCap,
   FileCheck2,
   ScanText,
-  Search,
-  ShieldCheck,
   ArrowRight,
   CheckCircle2,
-  Building2,
   Sparkles,
   Info,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { toast } from "sonner";
 
 export default function OnboardingLandingPage() {
   const router = useRouter();
-  const { applicationType, setApplicationType, student } = useStudent();
+  const { setApplicationType, student } = useStudent();
 
   const handleSelectTrack = (type: ApplicationType) => {
     setApplicationType(type);
+    toast.success(`Welcome! Selected ${type === "renewal" ? "Renewal Scholar" : "New Applicant"} track.`);
     router.push("/dashboard");
   };
 
   return (
-    <div className="min-h-screen bg-surface flex flex-col justify-between">
-      {/* Top Civic Navigation */}
-      <header className="w-full border-b border-outline-variant/30 bg-surface/80 backdrop-blur-md sticky top-0 z-30">
+    <div className="min-h-screen bg-surface dark:bg-dark-bg text-on-surface dark:text-slate-100 flex flex-col justify-between transition-colors">
+      {/* Top Header */}
+      <header className="w-full border-b border-outline-variant/30 dark:border-dark-border bg-surface/80 dark:bg-dark-surface/80 backdrop-blur-md sticky top-0 z-30">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-white font-bold text-lg shadow-sm">
               SR
             </div>
-            <div>
+            <div className="flex items-center gap-2">
               <span className="font-bold text-xl text-primary tracking-tight">
                 ScholarReady
               </span>
-              <span className="hidden sm:inline-block ml-2 text-xs font-semibold text-slate-muted bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
-                Pasig City Student Portal
+              <span className="hidden sm:inline-block text-xs font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-dark-cardAlt px-2.5 py-0.5 rounded-full border border-slate-200 dark:border-dark-border">
+                Pasig City
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
+            <ThemeToggle />
             <Link href="/dashboard">
               <Button variant="secondary" size="sm">
-                Enter Portal Demo
+                Open Portal
                 <ArrowRight className="w-4 h-4 ml-1" />
               </Button>
             </Link>
@@ -60,78 +60,77 @@ export default function OnboardingLandingPage() {
       </header>
 
       {/* Main Hero & Track Selection */}
-      <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 py-10 sm:py-16 flex flex-col items-center">
-        {/* SDG & Civic Header Badge */}
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-secondary-soft text-emerald-800 text-xs font-semibold border border-emerald-200/80 mb-6 shadow-subtle">
+      <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 py-10 sm:py-14 flex flex-col items-center">
+        {/* Civic Badge */}
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary-soft dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 text-xs font-semibold border border-emerald-200/80 dark:border-emerald-800/80 mb-5 shadow-subtle">
           <span className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
-          <span>SDG 4: Quality Education • OVERCLOCK 2026</span>
+          <span>Pasig City College Scholarship Portal</span>
         </div>
 
         {/* Hero Title & Subtitle */}
-        <div className="text-center max-w-3xl mb-12">
-          <h1 className="text-3xl sm:text-5xl font-extrabold text-on-surface tracking-tight leading-tight">
-            Preparing Pasig Scholars for <span className="text-primary">Success & Renewal</span>
+        <div className="text-center max-w-2xl mb-10">
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-on-surface dark:text-slate-100 tracking-tight leading-tight">
+            Prepare Your Scholarship Requirements <span className="text-primary">in Minutes</span>
           </h1>
-          <p className="mt-4 text-base sm:text-lg text-on-surface-variant leading-relaxed">
-            An independent preparation gateway for college scholars in Pasig City.
-            Organize requirements, read documents with <strong>Lumen OCR</strong>, and track your verified grades.
+          <p className="mt-3 text-sm sm:text-base text-on-surface-variant dark:text-slate-400 leading-relaxed">
+            Organize required documents, digitize grades using <strong>Lumen OCR</strong>, and track your semestral standing with zero guesswork.
           </p>
         </div>
 
-        {/* Track Selection Cards (Branch 3) */}
-        <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+        {/* Track Selection Cards */}
+        <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-5 mb-10">
           {/* Renewal Track */}
           <div
             onClick={() => handleSelectTrack("renewal")}
-            className="cursor-pointer group relative rounded-2xl bg-white border-2 border-primary/20 hover:border-primary p-6 sm:p-8 transition-all hover:shadow-card flex flex-col justify-between"
+            className="cursor-pointer group relative rounded-2xl bg-white dark:bg-dark-card border-2 border-primary/20 hover:border-primary dark:border-dark-border dark:hover:border-primary p-6 sm:p-7 transition-all duration-200 hover:shadow-card hover:-translate-y-0.5 flex flex-col justify-between active:scale-[0.99]"
           >
             <div className="absolute -top-3 right-6">
               <Badge variant="success" size="sm" className="shadow-sm">
-                Recommended for Continuing Scholars
+                Continuing Scholars
               </Badge>
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-secondary-soft text-secondary">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-secondary-soft dark:bg-emerald-950/60 text-secondary">
                   <GraduationCap className="w-6 h-6" />
                 </div>
-                <div className="h-6 w-6 rounded-full border-2 border-primary flex items-center justify-center">
-                  <div className="h-3 w-3 rounded-full bg-primary" />
+                <div className="h-5 w-5 rounded-full border-2 border-primary flex items-center justify-center">
+                  <div className="h-2.5 w-2.5 rounded-full bg-primary" />
                 </div>
               </div>
 
-              <h2 className="text-2xl font-bold text-on-surface group-hover:text-primary transition-colors">
+              <h2 className="text-xl font-bold text-on-surface dark:text-slate-100 group-hover:text-primary transition-colors">
                 Renewal Scholar
               </h2>
-              <p className="text-sm text-on-surface-variant mt-2 leading-relaxed">
-                For continuing tertiary scholars maintaining their scholarship. Manage semestral renewal packets, verify OGR grades, and submit proof of enrollment.
+              <p className="text-xs text-on-surface-variant dark:text-slate-400 mt-1.5 leading-relaxed">
+                For continuing scholars renewing their scholarship for the upcoming semester.
               </p>
 
-              <div className="mt-6 space-y-2 border-t border-slate-border/50 pt-4">
-                <div className="flex items-center gap-2 text-xs text-slate-body font-medium">
+              <div className="mt-5 space-y-2 border-t border-slate-border/50 dark:border-dark-border/50 pt-3.5">
+                <div className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 font-medium">
                   <CheckCircle2 className="w-4 h-4 text-secondary shrink-0" />
                   <span>Official Grade Report (OGR) verification</span>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-slate-body font-medium">
+                <div className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 font-medium">
                   <CheckCircle2 className="w-4 h-4 text-secondary shrink-0" />
                   <span>Certificate of Registration (COR) matching</span>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-slate-body font-medium">
+                <div className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 font-medium">
                   <CheckCircle2 className="w-4 h-4 text-secondary shrink-0" />
-                  <span>Term GWA compliance checker (≤ 2.00)</span>
+                  <span>Term GWA compliance check (≤ 2.00)</span>
                 </div>
               </div>
             </div>
 
-            <div className="mt-8 pt-4">
+            <div className="mt-6 pt-2">
               <Button
                 variant="primary"
-                size="lg"
+                size="md"
                 className="w-full justify-between group-hover:bg-primary-light"
               >
-                <span>Enter as Renewal Scholar</span>
-                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                <span>Select Renewal Track</span>
+                <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
             </div>
           </div>
@@ -139,126 +138,118 @@ export default function OnboardingLandingPage() {
           {/* New Applicant Track */}
           <div
             onClick={() => handleSelectTrack("new")}
-            className="cursor-pointer group relative rounded-2xl bg-white border border-slate-border hover:border-primary/60 p-6 sm:p-8 transition-all hover:shadow-card flex flex-col justify-between"
+            className="cursor-pointer group relative rounded-2xl bg-white dark:bg-dark-card border border-slate-border dark:border-dark-border hover:border-primary/60 dark:hover:border-primary/60 p-6 sm:p-7 transition-all duration-200 hover:shadow-card hover:-translate-y-0.5 flex flex-col justify-between active:scale-[0.99]"
           >
             <div>
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-soft text-primary">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary-soft dark:bg-blue-950/60 text-primary">
                   <FileCheck2 className="w-6 h-6" />
                 </div>
-                <div className="h-6 w-6 rounded-full border-2 border-slate-300 flex items-center justify-center group-hover:border-primary transition-colors">
-                  <div className="h-3 w-3 rounded-full bg-transparent group-hover:bg-primary/50 transition-colors" />
+                <div className="h-5 w-5 rounded-full border-2 border-slate-300 dark:border-slate-600 flex items-center justify-center group-hover:border-primary transition-colors">
+                  <div className="h-2.5 w-2.5 rounded-full bg-transparent group-hover:bg-primary/50 transition-colors" />
                 </div>
               </div>
 
-              <h2 className="text-2xl font-bold text-on-surface group-hover:text-primary transition-colors">
+              <h2 className="text-xl font-bold text-on-surface dark:text-slate-100 group-hover:text-primary transition-colors">
                 New Applicant
               </h2>
-              <p className="text-sm text-on-surface-variant mt-2 leading-relaxed">
-                For incoming college freshmen or first-time applicants submitting initial documentation to the Pasig City education department.
+              <p className="text-xs text-on-surface-variant dark:text-slate-400 mt-1.5 leading-relaxed">
+                For incoming freshmen or first-time scholarship applicants submitting initial documents.
               </p>
 
-              <div className="mt-6 space-y-2 border-t border-slate-border/50 pt-4">
-                <div className="flex items-center gap-2 text-xs text-slate-body font-medium">
+              <div className="mt-5 space-y-2 border-t border-slate-border/50 dark:border-dark-border/50 pt-3.5">
+                <div className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 font-medium">
                   <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
-                  <span>Admission slip & entrance test verification</span>
+                  <span>College admission slip & exam verification</span>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-slate-body font-medium">
+                <div className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 font-medium">
                   <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
-                  <span>Barangay certificate of residency & voter's ID</span>
+                  <span>Barangay residency & voter certificate</span>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-slate-body font-medium">
+                <div className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 font-medium">
                   <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
-                  <span>Certificate of indigency / ITR documentation</span>
+                  <span>Certificate of indigency & income documents</span>
                 </div>
               </div>
             </div>
 
-            <div className="mt-8 pt-4">
+            <div className="mt-6 pt-2">
               <Button
                 variant="secondary"
-                size="lg"
+                size="md"
                 className="w-full justify-between group-hover:border-primary group-hover:text-primary"
               >
-                <span>Enter as New Applicant</span>
-                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                <span>Select New Applicant Track</span>
+                <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
             </div>
           </div>
         </div>
 
-        {/* Demo Profile Confirmation Card */}
-        <div className="w-full rounded-xl bg-surface-container-low border border-slate-border/80 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        {/* Demo Student Card */}
+        <div className="w-full rounded-xl bg-surface-low dark:bg-dark-card border border-slate-border/80 dark:border-dark-border p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-subtle">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full bg-primary-soft text-primary flex items-center justify-center font-bold text-sm shrink-0">
+            <div className="h-9 w-9 rounded-full bg-primary-soft dark:bg-blue-950/60 text-primary dark:text-blue-300 flex items-center justify-center font-bold text-xs shrink-0">
               MS
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-sm text-on-surface">{student.name}</span>
-                <Badge variant="success" size="sm">Active Demo Profile</Badge>
+                <span className="font-bold text-sm text-on-surface dark:text-slate-100">{student.name}</span>
+                <Badge variant="success" size="sm">Active Profile</Badge>
               </div>
-              <p className="text-xs text-on-surface-variant">
+              <p className="text-xs text-on-surface-variant dark:text-slate-400">
                 {student.school} • {student.program} ({student.yearLevel})
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 text-xs text-slate-muted">
+          <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
             <Info className="w-4 h-4 text-primary shrink-0" />
-            <span>Click any track above to enter the portal</span>
+            <span>Select a track above to enter</span>
           </div>
         </div>
 
-        {/* Feature Overview Strip */}
-        <div className="w-full grid grid-cols-1 sm:grid-cols-3 gap-4 mt-12 text-left">
-          <div className="p-4 rounded-xl bg-white border border-slate-border shadow-subtle">
+        {/* Feature Grid */}
+        <div className="w-full grid grid-cols-1 sm:grid-cols-3 gap-3.5 mt-10 text-left">
+          <div className="p-4 rounded-xl bg-white dark:bg-dark-card border border-slate-border dark:border-dark-border shadow-subtle">
             <div className="flex items-center gap-2 text-primary font-bold text-sm mb-1">
               <FileCheck2 className="w-4 h-4" />
-              <span>Independent Checklist</span>
+              <span>Checklist</span>
             </div>
-            <p className="text-xs text-on-surface-variant">
-              Track packet requirements with manual verification controls. No silent status changes.
+            <p className="text-xs text-on-surface-variant dark:text-slate-400 leading-relaxed">
+              Track requirements with manual verification controls. No silent status changes.
             </p>
           </div>
 
-          <div className="p-4 rounded-xl bg-white border border-slate-border shadow-subtle">
+          <div className="p-4 rounded-xl bg-white dark:bg-dark-card border border-slate-border dark:border-dark-border shadow-subtle">
             <div className="flex items-center gap-2 text-secondary font-bold text-sm mb-1">
               <ScanText className="w-4 h-4" />
               <span>Lumen OCR Scanner</span>
             </div>
-            <p className="text-xs text-on-surface-variant">
-              Digitize scans and PDFs. Search inside extracted text using PostgreSQL keywords.
+            <p className="text-xs text-on-surface-variant dark:text-slate-400 leading-relaxed">
+              Digitize scans and PDFs, and search inside extracted document text.
             </p>
           </div>
 
-          <div className="p-4 rounded-xl bg-white border border-slate-border shadow-subtle">
+          <div className="p-4 rounded-xl bg-white dark:bg-dark-card border border-slate-border dark:border-dark-border shadow-subtle">
             <div className="flex items-center gap-2 text-tertiary font-bold text-sm mb-1">
               <Sparkles className="w-4 h-4" />
-              <span>Verified Grade History</span>
+              <span>Grade History</span>
             </div>
-            <p className="text-xs text-on-surface-variant">
-              Review and correct AI-extracted grades by semester. Confirm GWA compliance with confidence.
+            <p className="text-xs text-on-surface-variant dark:text-slate-400 leading-relaxed">
+              Review and correct extracted grades by term before confirming GWA.
             </p>
           </div>
         </div>
       </main>
 
-      {/* Civic Footer & Disclaimer */}
-      <footer className="w-full border-t border-outline-variant/30 bg-surface-low py-6 text-center text-xs text-slate-muted px-4">
-        <div className="max-w-4xl mx-auto space-y-2">
-          <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-semibold">
-            <span>OVERCLOCK 2026</span>
-            <span>•</span>
-            <span>Team ASCII</span>
-            <span>•</span>
-            <span>SDG 4: Quality Education</span>
-            <span>•</span>
-            <span>Pasig City Tertiary Education</span>
-          </div>
-          <p className="text-[11px] text-slate-400">
-            Disclaimer: ScholarReady is an independent hackathon prototype. No formal affiliation or endorsement by the Pasig City Government or City Education Department is claimed.
-          </p>
+      {/* Clean 1-Line Footer */}
+      <footer className="w-full border-t border-outline-variant/30 dark:border-dark-border bg-surface-low dark:bg-dark-surface py-4 text-center text-xs text-slate-500 dark:text-slate-400 px-4 transition-colors">
+        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+          <span>ScholarReady — Pasig City College Scholarship Portal</span>
+          <span className="text-[11px] text-slate-400 dark:text-slate-500">
+            Independent student application preparation tool.
+          </span>
         </div>
       </footer>
     </div>
