@@ -4,7 +4,7 @@ ScholarReady helps Pasig City college students prepare scholarship applications 
 
 ## Status
 
-This repository contains the shared initial structure. Feature modules, database schema, migrations, and Lumen OCR endpoint details remain to be implemented and verified.
+This repository contains the shared app structure and an announcement feed. The remaining feature modules and Lumen OCR integration still need implementation and verification.
 
 ## Local setup
 
@@ -15,6 +15,21 @@ This repository contains the shared initial structure. Feature modules, database
 5. Run `npm run dev`.
 
 The app does not initialize, migrate, seed, or reset the database automatically. Keep `.env.local`, `data/uploads/`, database dumps, and real student files out of version control.
+
+## Announcements
+
+The Pasig Scholars Telegram channel is also a supported source. For automatic updates, use a dedicated bot authorized by the channel operator and set `TELEGRAM_PASIG_BOT_TOKEN` in `.env.local`. Run the importer regularly. Telegram retains pending bot updates for up to 24 hours, so poll more often than once a day if reliable delivery is required.
+
+For historical Telegram notices, use the manual import command with `source` set to `pasig-scholars-telegram` and `permalink_url` set to a direct `https://t.me/pasigscholarship/<post-number>` link. The importer uses the post number to deduplicate manual and bot imports. Keep the publication date and a short verified summary.
+
+Start PostgreSQL, set `DATABASE_URL` in `.env.local`, and run `npm run db:migrate`.
+The Announcements page displays saved posts from Pasig City Scholarship Office and Pamantasan ng Lungsod ng Pasig, with category, keyword, and Philippine publication-date filters.
+
+Run `npm run notifications:import` with Node.js 22.15 or newer to import from Pasig City's News and Releases archive and PLP's RSS feed. The first run checks available items from the past 30 days and includes three verified historical city notices. Each source saves its own checkpoint after a successful run. Subsequent runs keep previous announcements. Facebook import is optional and runs for Pages configured with a Meta Graph API version, numeric Page ID, and authorized token.
+
+After verifying the import, run `powershell -NoProfile -File .\scripts\schedule-announcements.ps1` to register the daily 7:00 AM Philippine time job on a Windows machine that can reach PostgreSQL. Task Scheduler records the exit status, and the job appends its output to `data/announcement-import/sync.log`.
+
+To add a verified post manually, run `npm run notifications:import -- --manual path/to/post.json`. The JSON needs `source` (`scholarship-office` or `plp`), `id` (the original post ID), `created_time` (ISO timestamp with an offset), `permalink_url` (the direct Facebook post link), `title`, `message`, and a `categories` array containing `allowance`, `spes`, or `scholarship`. Use this path for relevant image-only posts after reviewing them.
 
 ## Repository layout
 
