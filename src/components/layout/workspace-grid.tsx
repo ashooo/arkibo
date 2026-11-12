@@ -23,7 +23,7 @@ export function WorkspaceGrid() {
               </div>
               <div className="flex flex-1 items-start justify-between gap-3 p-4 text-sm text-on-surface-variant dark:text-slate-300">
                 <p>{description}</p>
-                <ArrowUpRight aria-hidden="true" size={17} className="shrink-0 text-primary dark:text-blue-300" />
+                <ArrowUpRight aria-hidden="true" size={17} className="shrink-0 text-primary dark:text-dark-accent" />
               </div>
             </Link>
           </li>

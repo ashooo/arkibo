@@ -10,10 +10,10 @@
 }
 :global(.dark) .filters input[type="date"] { color-scheme: dark; }
 .filters input:focus-visible, .link:focus-visible {
-  @apply outline outline-2 outline-offset-2 outline-primary dark:outline-blue-300;
+  @apply outline outline-2 outline-offset-2 outline-primary dark:outline-dark-accent;
 }
 .actions { @apply col-span-full flex flex-wrap items-center gap-x-5 gap-y-2; }
-.link { @apply inline-flex min-h-11 items-center gap-1.5 rounded-sm text-sm font-semibold text-primary underline-offset-4 hover:underline dark:text-blue-300; }
+.link { @apply inline-flex min-h-11 items-center gap-1.5 rounded-sm text-sm font-semibold text-primary underline-offset-4 hover:underline dark:text-dark-accent; }
 .notice {
   @apply rounded-2xl border-slate-border bg-white dark:border-dark-border dark:bg-dark-card;
 }
@@ -25,4 +25,25 @@
 .meta { @apply flex flex-wrap items-center gap-2 text-sm text-on-surface-variant dark:text-slate-300; }
 .meta time { @apply sm:ml-auto; }
 .status { @apply text-sm leading-relaxed; }
-.pageLink[aria-current=page] { @apply border-primary bg-primary-soft text-primary dark:bg-blue-950 dark:text-blue-200; }
+.pageLink[aria-current=page] { @apply border-primary bg-primary-soft text-primary dark:bg-dark-accentSurface dark:text-dark-accent; }
+
+:global(.dark) .filters,
+:global(.dark) .notice,
+:global(.dark) .status,
+:global(.dark) .pageLink {
+  @apply border-dark-border bg-dark-card text-slate-100;
+}
+
+:global(.dark) .filters > label > input {
+  @apply border-dark-border bg-dark-surface text-slate-100 placeholder:text-dark-muted;
+}
+
+:global(.dark) .pageLink:hover { @apply bg-dark-cardAlt; }
+:global(.dark) .pageLink[aria-current="page"] {
+  @apply border-dark-accentBorder bg-dark-accentSurface text-dark-accent;
+}
+:global(.dark) .actions button {
+  @apply bg-dark-accent text-dark-bg hover:bg-[#d1e5c8];
+}
+:global(.dark) .link { @apply text-dark-accent; }
+:global(.dark) .meta, :global(.dark) .pageDisabled { @apply text-slate-300; }

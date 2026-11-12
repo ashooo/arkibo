@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bell, ClipboardList, FolderArchive, GraduationCap, House, ScanText, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useStudent } from "@/lib/student-context";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 const navigation = [
   { href: "/dashboard", label: "Home", Icon: House },
@@ -16,13 +18,14 @@ const navigation = [
 
 export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => void }) {
   const pathname = usePathname();
+  const { student, applicationType, toggleApplicationType } = useStudent();
   return (
     <>
       {isOpen && <button type="button" tabIndex={-1} aria-label="Close navigation" onClick={onClose} className="fixed inset-0 z-40 bg-black/30 lg:hidden" />}
       <aside
         id="portal-navigation"
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-64 shrink-0 overflow-y-auto border-r border-slate-border bg-white dark:border-dark-border dark:bg-dark-surface lg:visible lg:static lg:translate-x-0",
+          "fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 flex-col overflow-y-auto border-r border-slate-border bg-white dark:border-dark-border dark:bg-dark-surface lg:visible lg:static lg:translate-x-0",
           isOpen ? "visible translate-x-0" : "invisible -translate-x-full",
         )}
         onKeyDown={(event) => { if (event.key === "Escape") onClose?.(); }}
@@ -40,13 +43,31 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () =>
           {navigation.map(({ href, label, Icon }) => (
             <Link key={href} href={href} onClick={onClose} aria-current={pathname === href ? "page" : undefined} className={cn(
               "flex min-h-12 items-center gap-4 rounded-r-full px-5 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary",
-              pathname === href ? "bg-primary-soft text-primary-dark dark:bg-blue-950 dark:text-blue-200" : "hover:bg-surface-low dark:hover:bg-dark-card",
+              pathname === href ? "bg-primary-soft text-primary-dark dark:bg-dark-accentSurface dark:text-dark-accent" : "hover:bg-surface-low dark:hover:bg-dark-card",
             )}>
               <Icon aria-hidden="true" size={20} />
               {label}
             </Link>
           ))}
         </nav>
+        <div className="mt-auto space-y-3 border-t border-slate-border p-4 dark:border-dark-border">
+          <div className="flex items-center gap-3">
+            <span aria-hidden="true" className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary-soft text-sm font-bold text-primary-dark dark:bg-dark-accentSurface">
+              {student.name.split(" ").map((part) => part[0]).join("")}
+            </span>
+            <div className="min-w-0">
+              <p className="break-words text-sm font-semibold">{student.name}</p>
+              <p className="text-xs text-on-surface-variant dark:text-slate-300">{student.yearLevel}</p>
+            </div>
+          </div>
+          <p className="text-xs text-on-surface-variant dark:text-slate-300">{student.school}</p>
+          <div className="flex items-center justify-between gap-2">
+            <button type="button" onClick={toggleApplicationType} aria-label="Switch application track" className="min-h-11 rounded-full px-3 text-xs font-semibold text-primary hover:bg-primary-soft dark:hover:bg-dark-accentSurface">
+              {applicationType === "renewal" ? "Renewal Scholar" : "New Applicant"}
+            </button>
+            <ThemeToggle />
+          </div>
+        </div>
       </aside>
     </>
   );

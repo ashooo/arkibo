@@ -79,11 +79,11 @@ export default async function NotificationsPage({ searchParams }: {
   }
 
   return (
-    <section className="mx-auto max-w-5xl space-y-8 pb-8 text-on-surface dark:text-slate-100 sm:space-y-10">
-      <header className="workspace-banner !bg-[#174477] text-white dark:!bg-[#223b60]">
+    <section className="flex flex-col gap-6 pb-8 text-on-surface dark:text-slate-100">
+      <header className="workspace-banner">
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Announcements</h1>
-          <p className="text-sm leading-relaxed text-blue-100 sm:text-base">
+          <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">Announcements</h1>
+          <p className="text-sm text-on-surface-variant dark:text-slate-400">
             Scholarship, allowance, and SPES updates from official sources.
           </p>
         </div>

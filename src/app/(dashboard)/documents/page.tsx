@@ -44,7 +44,7 @@ export default function DocumentsPage() {
       </div>
 
       <Card className="p-8 border-dashed border-2 border-slate-300 dark:border-dark-border text-center flex flex-col items-center justify-center min-h-[300px]">
-        <div className="w-12 h-12 rounded-xl bg-primary-soft dark:bg-blue-950/60 text-primary dark:text-blue-300 flex items-center justify-center mb-3">
+        <div className="w-12 h-12 rounded-xl bg-primary-soft dark:bg-dark-accentSurface text-primary dark:text-dark-accent flex items-center justify-center mb-3">
           <FolderArchive className="w-6 h-6" />
         </div>
         <h3 className="text-lg font-bold text-on-surface dark:text-slate-100">Documents Library Workspace</h3>

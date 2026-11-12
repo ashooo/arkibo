@@ -26,7 +26,7 @@ export default function OnboardingLandingPage() {
         <span className="flex items-center gap-2 text-lg font-semibold"><GraduationCap aria-hidden="true" className="text-primary" size={24} />ScholarReady</span>
         <div className="flex items-center gap-3">
           <ThemeToggle />
-          <Link href="/dashboard" className="inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-sm font-semibold text-primary hover:bg-primary-soft dark:hover:bg-blue-950">Open portal <ArrowRight aria-hidden="true" size={16} /></Link>
+          <Link href="/dashboard" className="inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-sm font-semibold text-primary hover:bg-primary-soft dark:hover:bg-dark-accentSurface">Open portal <ArrowRight aria-hidden="true" size={16} /></Link>
         </div>
       </header>
       <main className="mx-auto max-w-4xl space-y-7 px-4 py-10 sm:px-8 sm:py-16">

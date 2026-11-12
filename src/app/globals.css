@@ -13,9 +13,9 @@
   }
 
   .dark {
-    --bg-page: #111120;
+    --bg-page: #181917;
     --text-page: #f8fafc;
-    --border-color: #232d42;
+    --border-color: #44463e;
   }
 
   body {
@@ -29,7 +29,7 @@
 }
 
 @layer components {
-  .dark .text-primary, .dark .text-primary-dark { color: #a8c7fa; }
+  .dark .text-primary, .dark .text-primary-dark { color: #bdd4b2; }
   .portal-frame { @apply flex h-dvh min-w-0; }
   .workspace-card {
     @apply flex h-full flex-col overflow-hidden rounded-xl border border-slate-border bg-white transition-shadow hover:shadow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary dark:border-dark-border dark:bg-dark-card;
@@ -62,8 +62,17 @@
   border-radius: 9999px;
 }
 .dark ::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #53564b;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+.dark .workspace-cover {
+  color: var(--cover-dark-ink);
+  background: var(--cover-dark-bg);
+}
+.workspace-cover[data-tone="blue"] { --cover-dark-bg: #333d30; --cover-dark-ink: #d1e5c8; }
+.workspace-cover[data-tone="green"] { --cover-dark-bg: #2d4037; --cover-dark-ink: #c5e5d3; }
+.workspace-cover[data-tone="purple"] { --cover-dark-bg: #403840; --cover-dark-ink: #ead7e8; }
+.workspace-cover[data-tone="gold"] { --cover-dark-bg: #433b2c; --cover-dark-ink: #f0dcaa; }
