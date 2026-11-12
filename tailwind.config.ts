@@ -58,6 +58,14 @@ const config: Config = {
           variant: "#dae2fd",
           tint: "#2151da",
         },
+        dark: {
+          bg: "#090d16",
+          surface: "#0f172a",
+          card: "#131b2e",
+          cardAlt: "#182238",
+          border: "#232d42",
+          muted: "#94a3b8",
+        },
         slate: {
           dark: "#0f172a",
           body: "#334155",
@@ -100,6 +108,7 @@ const config: Config = {
         subtle: "0 1px 3px rgba(15, 23, 42, 0.04)",
         card: "0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04)",
         floating: "0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.03)",
+        cardDark: "0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2)",
       },
     },
   },
@@ -107,4 +116,3 @@ const config: Config = {
 };
 
 export default config;
-

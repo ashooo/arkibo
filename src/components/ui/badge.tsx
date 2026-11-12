@@ -14,17 +14,17 @@ export function Badge({
 }: BadgeProps) {
   const variants = {
     success:
-      "bg-secondary-soft text-emerald-800 border-emerald-200",
+      "bg-secondary-soft dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/80",
     warning:
-      "bg-tertiary-soft text-amber-900 border-amber-200",
+      "bg-tertiary-soft dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 border-amber-200 dark:border-amber-800/80",
     error:
-      "bg-error-soft text-red-900 border-red-200",
+      "bg-error-soft dark:bg-red-950/60 text-red-900 dark:text-red-300 border-red-200 dark:border-red-800/80",
     primary:
-      "bg-primary-soft text-primary-dark border-blue-200",
+      "bg-primary-soft dark:bg-blue-950/60 text-primary-dark dark:text-blue-300 border-blue-200 dark:border-blue-800/80",
     neutral:
-      "bg-slate-100 text-slate-700 border-slate-200",
+      "bg-slate-100 dark:bg-dark-cardAlt text-slate-700 dark:text-slate-300 border-slate-200 dark:border-dark-border",
     outline:
-      "bg-transparent text-slate-body border-slate-border",
+      "bg-transparent text-slate-600 dark:text-slate-400 border-slate-border dark:border-dark-border",
   };
 
   const sizes = {
@@ -44,4 +44,3 @@ export function Badge({
     />
   );
 }
-

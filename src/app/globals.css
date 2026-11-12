@@ -7,20 +7,24 @@
     --font-plus-jakarta: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     --font-jetbrains-mono: "JetBrains Mono", monospace;
 
-    /* Theme colors */
-    --color-primary: 29 78 216;       /* #1d4ed8 */
-    --color-secondary: 16 185 129;    /* #10b981 */
-    --color-tertiary: 245 158 11;     /* #f59e0b */
-    --color-error: 186 26 26;         /* #ba1a1a */
-    --color-surface: 250 248 255;     /* #faf8ff */
+    --bg-page: #faf8ff;
+    --text-page: #131b2e;
+    --border-color: #e2e8f0;
+  }
+
+  .dark {
+    --bg-page: #090d16;
+    --text-page: #f8fafc;
+    --border-color: #232d42;
   }
 
   body {
-    background-color: #faf8ff;
-    color: #131b2e;
+    background-color: var(--bg-page);
+    color: var(--text-page);
     font-family: var(--font-plus-jakarta);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 }
 
@@ -35,6 +39,9 @@
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 9999px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;

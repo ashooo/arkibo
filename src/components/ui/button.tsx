@@ -10,17 +10,17 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = "primary", size = "md", isLoading, children, disabled, ...props }, ref) => {
     const baseStyles =
-      "inline-flex items-center justify-center font-semibold rounded-md transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none select-none";
+      "inline-flex items-center justify-center font-semibold rounded-md transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none select-none active:scale-[0.98]";
 
     const variants = {
       primary:
         "bg-primary text-white hover:bg-primary-light active:bg-primary-dark shadow-sm",
       secondary:
-        "bg-white border border-slate-border text-slate-body hover:bg-slate-50 hover:text-slate-dark active:bg-slate-100 shadow-subtle",
+        "bg-white dark:bg-dark-card border border-slate-border dark:border-dark-border text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-dark-cardAlt active:bg-slate-100 shadow-subtle",
       outline:
-        "border border-primary text-primary hover:bg-primary-soft active:bg-blue-100",
+        "border border-primary text-primary hover:bg-primary-soft dark:hover:bg-primary/10 active:bg-blue-100 dark:active:bg-primary/20",
       ghost:
-        "text-slate-body hover:bg-surface-high hover:text-on-surface",
+        "text-slate-700 dark:text-slate-300 hover:bg-surface-high dark:hover:bg-dark-cardAlt hover:text-on-surface dark:hover:text-slate-100",
       danger:
         "bg-error text-white hover:bg-red-700 active:bg-red-800 shadow-sm",
       success:
@@ -68,4 +68,3 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   }
 );
 Button.displayName = "Button";
-

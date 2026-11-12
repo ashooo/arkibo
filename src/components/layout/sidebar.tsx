@@ -11,12 +11,12 @@ import {
   FolderArchive,
   GraduationCap,
   Bell,
-  CheckCircle2,
   ArrowLeftRight,
   ShieldCheck,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 interface SidebarProps {
   isOpen?: boolean;
@@ -35,18 +35,18 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       badge: null,
     },
     {
-      name: "Scholarship Checklist",
+      name: "Checklist",
       href: "/checklist",
       icon: CheckSquare,
-      badge: applicationType === "renewal" ? "3 Pending" : "5 Pending",
-      badgeColor: "bg-tertiary-soft text-amber-800",
+      badge: applicationType === "renewal" ? "3 Left" : "5 Left",
+      badgeColor: "bg-tertiary-soft dark:bg-amber-950/60 text-amber-800 dark:text-amber-300",
     },
     {
-      name: "Document Scanner",
+      name: "Scanner & OCR",
       href: "/scanner",
       icon: ScanText,
-      badge: "Lumen OCR",
-      badgeColor: "bg-primary-soft text-primary",
+      badge: "Lumen",
+      badgeColor: "bg-primary-soft dark:bg-blue-950/60 text-primary dark:text-blue-300",
     },
     {
       name: "My Documents",
@@ -55,17 +55,17 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       badge: null,
     },
     {
-      name: "Grade History",
+      name: "Grades",
       href: "/grades",
       icon: GraduationCap,
       badge: null,
     },
     {
-      name: "Notifications",
+      name: "Announcements",
       href: "/notifications",
       icon: Bell,
       badge: "Sample",
-      badgeColor: "bg-slate-100 text-slate-600",
+      badgeColor: "bg-slate-100 dark:bg-dark-cardAlt text-slate-600 dark:text-slate-400",
     },
   ];
 
@@ -75,35 +75,33 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       {isOpen && (
         <div
           onClick={onClose}
-          className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm lg:hidden transition-opacity"
+          className="fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm lg:hidden transition-opacity"
         />
       )}
 
       {/* Sidebar Container */}
       <aside
         className={cn(
-          "fixed top-0 bottom-0 left-0 z-50 flex w-72 flex-col justify-between bg-surface-low border-r border-outline-variant/30 p-space-lg transition-transform duration-300 ease-in-out lg:translate-x-0",
+          "fixed top-0 bottom-0 left-0 z-50 flex w-72 flex-col justify-between bg-surface-low dark:bg-dark-surface border-r border-outline-variant/30 dark:border-dark-border p-space-lg transition-transform duration-300 ease-in-out lg:translate-x-0",
           isOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
         <div className="flex flex-col gap-space-lg">
           {/* Brand Header */}
-          <div className="flex flex-col gap-space-xs">
+          <div className="flex flex-col gap-1">
             <div className="flex items-center justify-between">
               <Link href="/dashboard" className="flex items-center gap-space-sm group">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-white shadow-sm font-bold text-lg">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-white shadow-sm font-bold text-lg group-hover:scale-105 transition-transform">
                   SR
                 </div>
-                <div className="flex flex-col">
-                  <span className="font-bold text-xl text-primary tracking-tight group-hover:text-primary-dark transition-colors">
-                    ScholarReady
-                  </span>
-                </div>
+                <span className="font-bold text-xl text-primary tracking-tight group-hover:text-primary-light transition-colors">
+                  ScholarReady
+                </span>
               </Link>
               {onClose && (
                 <button
                   onClick={onClose}
-                  className="p-1 rounded-lg text-slate-muted hover:bg-surface-high lg:hidden"
+                  className="p-1 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-dark-cardAlt lg:hidden"
                   aria-label="Close menu"
                 >
                   <X className="w-5 h-5" />
@@ -111,19 +109,19 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               )}
             </div>
 
-            <p className="text-xs text-on-surface-variant leading-snug mt-1">
-              Independent Student Portal for Pasig College Students
+            <p className="text-xs text-on-surface-variant dark:text-slate-400 leading-snug">
+              Pasig College Scholar Portal
             </p>
 
-            {/* Civic Status Pill */}
-            <div className="mt-2 inline-flex items-center gap-1.5 self-start px-2.5 py-1 rounded-full bg-secondary-soft text-emerald-800 text-xs font-semibold">
-              <span className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
-              <span>{student.school.includes("PLP") ? "PLP College Scholar" : "Pasig Scholar"}</span>
+            {/* Status Pill */}
+            <div className="mt-1.5 inline-flex items-center gap-1.5 self-start px-2.5 py-0.5 rounded-full bg-secondary-soft dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 text-xs font-semibold">
+              <span className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse" />
+              <span>Pasig Scholar</span>
             </div>
           </div>
 
           {/* Navigation Links */}
-          <nav className="flex flex-col gap-1.5" aria-label="Portal Navigation">
+          <nav className="flex flex-col gap-1" aria-label="Portal Navigation">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
               const Icon = item.icon;
@@ -134,14 +132,14 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                   href={item.href}
                   onClick={onClose}
                   className={cn(
-                    "flex items-center justify-between px-space-md py-2.5 rounded-lg text-sm font-semibold transition-all select-none",
+                    "flex items-center justify-between px-space-md py-2.5 rounded-lg text-sm font-semibold transition-all select-none active:scale-[0.98]",
                     isActive
                       ? "bg-primary text-white shadow-sm"
-                      : "text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface"
+                      : "text-slate-600 dark:text-slate-300 hover:bg-surface-container-high dark:hover:bg-dark-cardAlt hover:text-on-surface dark:hover:text-white"
                   )}
                 >
                   <div className="flex items-center gap-space-sm min-w-0">
-                    <Icon className={cn("w-5 h-5 shrink-0", isActive ? "text-white" : "text-slate-muted")} />
+                    <Icon className={cn("w-4 h-4 shrink-0", isActive ? "text-white" : "text-slate-400 dark:text-slate-500")} />
                     <span className="truncate">{item.name}</span>
                   </div>
 
@@ -161,23 +159,25 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           </nav>
         </div>
 
-        {/* Footer Track Switcher & Administrative Context */}
-        <div className="flex flex-col gap-space-sm pt-space-md border-t border-outline-variant/30">
-          <div className="flex items-center justify-between text-xs text-on-surface-variant">
-            <span className="font-semibold uppercase tracking-wider text-slate-400 text-[10px]">Active Track</span>
+        {/* Footer Track Switcher & Theme Control */}
+        <div className="flex flex-col gap-space-sm pt-space-md border-t border-outline-variant/30 dark:border-dark-border">
+          <div className="flex items-center justify-between text-xs text-on-surface-variant dark:text-slate-400">
+            <span className="font-semibold uppercase tracking-wider text-[10px] text-slate-400 dark:text-slate-500">
+              Active Track
+            </span>
             <button
               onClick={toggleApplicationType}
               className="inline-flex items-center gap-1 text-[11px] text-primary font-bold hover:underline"
-              title="Click to toggle between Renewal Scholar and New Applicant mode"
+              title="Toggle between Renewal and New Applicant"
             >
               <ArrowLeftRight className="w-3 h-3" />
               <span>Switch</span>
             </button>
           </div>
 
-          <div className="p-2.5 rounded-lg bg-white border border-slate-border/80 shadow-subtle flex flex-col gap-1">
+          <div className="p-2.5 rounded-lg bg-white dark:bg-dark-card border border-slate-border/80 dark:border-dark-border shadow-subtle flex flex-col gap-1">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-on-surface capitalize">
+              <span className="text-xs font-bold text-on-surface dark:text-slate-100 capitalize">
                 {applicationType === "renewal" ? "Renewal Scholar" : "New Applicant"}
               </span>
               <span
@@ -187,23 +187,22 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                 )}
               />
             </div>
-            <p className="text-[11px] text-on-surface-variant leading-tight">
+            <p className="text-[11px] text-on-surface-variant dark:text-slate-400 leading-tight">
               {applicationType === "renewal"
-                ? "Tracking OGR, Certificate of Registration & Semester GWA"
-                : "Tracking Admission Slip, Brgy Certificate & Requirements"}
+                ? "Grade Report, Registration & GWA"
+                : "Admission, Residency & Indigency"}
             </p>
           </div>
 
-          <div className="flex items-center justify-between pt-1 text-[11px] text-slate-muted">
-            <div className="flex items-center gap-1">
+          <div className="flex items-center justify-between pt-1">
+            <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
               <ShieldCheck className="w-3.5 h-3.5 text-secondary" />
-              <span>LGU Pasig Stream</span>
+              <span>{student.term}</span>
             </div>
-            <span>{student.term}</span>
+            <ThemeToggle />
           </div>
         </div>
       </aside>
     </>
   );
 }
-
