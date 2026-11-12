@@ -29,49 +29,24 @@
 }
 
 @layer components {
-  .dark .text-primary, .dark .text-primary-dark { color: #fdba8c; }
-  .portal-frame {
-    height: 100dvh;
-    min-width: 0;
-    margin-inline: auto;
-    max-width: 100rem;
+  .dark .text-primary, .dark .text-primary-dark { color: #a8c7fa; }
+  .portal-frame { @apply flex h-dvh min-w-0; }
+  .workspace-card {
+    @apply flex h-full flex-col overflow-hidden rounded-xl border border-slate-border bg-white transition-shadow hover:shadow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary dark:border-dark-border dark:bg-dark-card;
+  }
+  .workspace-cover {
+    @apply flex min-h-28 items-start justify-between gap-3 p-5;
+    color: var(--cover-ink);
+    background: var(--cover-bg);
+  }
+  .workspace-cover[data-tone="blue"] { --cover-bg: #d3e3fd; --cover-ink: #174477; }
+  .workspace-cover[data-tone="green"] { --cover-bg: #c4eed0; --cover-ink: #0f5229; }
+  .workspace-cover[data-tone="purple"] { --cover-bg: #e8def8; --cover-ink: #4c3670; }
+  .workspace-cover[data-tone="gold"] { --cover-bg: #ffe4aa; --cover-ink: #644604; }
+  .workspace-banner {
+    @apply flex flex-col gap-4 rounded-2xl bg-primary-soft p-5 sm:flex-row sm:items-center sm:justify-between sm:p-7 dark:bg-dark-cardAlt;
   }
 
-  @media (min-width: 1024px) {
-    .portal-frame {
-      height: calc(100dvh - 3rem);
-      margin: 1.5rem auto;
-      width: calc(100% - 3rem);
-      overflow: clip;
-      border-radius: 1.5rem;
-      box-shadow: 0 18px 56px rgb(31 34 59 / 12%);
-    }
-    .portal-landing {
-      min-height: calc(100dvh - 3rem);
-      width: calc(100% - 3rem);
-      max-width: 100rem;
-      margin: 1.5rem auto;
-      border-radius: 1.5rem;
-      overflow: clip;
-      box-shadow: 0 18px 56px rgb(31 34 59 / 12%);
-    }
-  }
-
-  .dashboard-metric {
-    @apply flex min-h-32 items-center justify-between gap-3 rounded-2xl p-5;
-    color: var(--metric-ink);
-    background: linear-gradient(115deg, var(--metric-start), var(--metric-end));
-  }
-
-  .dashboard-metric[data-tone="peach"] { --metric-start: #ffad7a; --metric-end: #ffd1b1; --metric-ink: #592909; }
-  .dashboard-metric[data-tone="lavender"] { --metric-start: #b6a9f8; --metric-end: #d2c8ff; --metric-ink: #33266a; }
-  .dashboard-metric[data-tone="aqua"] { --metric-start: #66d4e9; --metric-end: #a5eef4; --metric-ink: #124850; }
-  .dashboard-metric[data-tone="indigo"] { --metric-start: #3a417e; --metric-end: #535d9f; --metric-ink: #fff; }
-
-  .dashboard-metric-icon {
-    @apply flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white;
-    color: #353863;
-  }
 }
 
 /* Custom civic scrollbar */

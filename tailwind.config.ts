@@ -12,15 +12,15 @@ const config: Config = {
     extend: {
       colors: {
         primary: {
-          DEFAULT: "#a44116",
-          dark: "#7c2e0e",
-          light: "#b84a1a",
-          container: "#a44116",
+          DEFAULT: "#0b57d0",
+          dark: "#174477",
+          light: "#1a65d8",
+          container: "#0b57d0",
           "on-container": "#cad3ff",
           fixed: "#dce1ff",
           "fixed-dim": "#b7c4ff",
           "on-fixed": "#001551",
-          soft: "#fff0e5",
+          soft: "#e8f0fe",
         },
         secondary: {
           DEFAULT: "#10b981",
@@ -47,11 +47,11 @@ const config: Config = {
           soft: "#fef2f2",
         },
         surface: {
-          DEFAULT: "#f4f5f8",
-          bright: "#f4f5f8",
+          DEFAULT: "#f8fafd",
+          bright: "#f8fafd",
           dim: "#d2d9f4",
           lowest: "#ffffff",
-          low: "#f0f1f7",
+          low: "#edf2fa",
           container: "#eceaf7",
           high: "#e9e6f5",
           highest: "#dae2fd",

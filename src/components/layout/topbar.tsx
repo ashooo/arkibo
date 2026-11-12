@@ -7,7 +7,7 @@ import {
   School,
   CheckCircle2,
   Menu,
-  Clock,
+
   ArrowLeftRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -18,7 +18,7 @@ interface TopbarProps {
 }
 
 const pageNames: Record<string, string> = {
-  "/dashboard": "Dashboard",
+  "/dashboard": "Home",
   "/checklist": "Checklist",
   "/scanner": "Scanner & OCR",
   "/documents": "My Documents",
@@ -43,7 +43,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
         </button>
 
         <div className="flex min-w-0 items-center gap-2.5 text-xs text-on-surface-variant dark:text-slate-400 font-medium">
-          <div className="hidden shrink-0 items-center justify-center w-8 h-8 rounded-lg bg-primary-soft dark:bg-orange-950/60 text-primary dark:text-orange-300 sm:flex">
+          <div className="hidden shrink-0 items-center justify-center w-8 h-8 rounded-lg bg-primary-soft dark:bg-blue-950/60 text-primary dark:text-blue-300 sm:flex">
             <School className="w-4 h-4" />
           </div>
           <div className="flex min-w-0 flex-col">
@@ -73,12 +73,6 @@ export function Topbar({ onMenuClick }: TopbarProps) {
           <ArrowLeftRight className="w-3.5 h-3.5" />
           <span>Track: {applicationType === "renewal" ? "Renewal Scholar" : "New Applicant"}</span>
         </button>
-
-        {/* Concise Deadline Notice */}
-        <div className="hidden xl:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-dark-cardAlt text-slate-700 dark:text-slate-300 text-xs font-medium border border-slate-200 dark:border-dark-border">
-          <Clock className="w-3.5 h-3.5 text-tertiary" />
-          <span>Deadline: <strong>Feb 28 (12 days left)</strong></span>
-        </div>
 
         {/* Theme Toggle Button */}
         <ThemeToggle />

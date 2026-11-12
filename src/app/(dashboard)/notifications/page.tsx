@@ -80,11 +80,13 @@ export default async function NotificationsPage({ searchParams }: {
 
   return (
     <section className="mx-auto max-w-5xl space-y-8 pb-8 text-on-surface dark:text-slate-100 sm:space-y-10">
-      <header className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Announcements</h1>
-        <p className="text-sm leading-relaxed text-on-surface-variant dark:text-slate-300 sm:text-base">
-          Scholarship, allowance, and SPES updates from official sources.
-        </p>
+      <header className="workspace-banner !bg-[#174477] text-white dark:!bg-[#223b60]">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Announcements</h1>
+          <p className="text-sm leading-relaxed text-blue-100 sm:text-base">
+            Scholarship, allowance, and SPES updates from official sources.
+          </p>
+        </div>
       </header>
       <form action="/notifications" method="get" className={styles.filters}>
         <nav aria-label="Announcement categories" className="col-span-full min-w-0">
