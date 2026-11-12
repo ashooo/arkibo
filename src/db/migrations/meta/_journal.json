@@ -8,6 +8,13 @@
       "when": 1794503456677,
       "tag": "0000_stale_tarot",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1794503456678,
+      "tag": "0001_ranked_document_search",
+      "breakpoints": true
     }
   ]
 }

@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import type { StoredDocument } from "@/types/shared";
 
-type SearchResult = StoredDocument & { snippet: string | null };
+type SearchResult = StoredDocument & { snippet: string | null; matchType?: string; score?: number };
 type ApiError = { error?: string };
 
 export function DocumentLibrary() {
@@ -51,13 +51,19 @@ export function DocumentLibrary() {
     return () => { active = false; };
   }, []);
 
+  useEffect(() => {
+    if (!query.trim()) return;
+    const timer = window.setTimeout(() => void load(query.trim()), 350);
+    return () => window.clearTimeout(timer);
+  }, [query]);
+
   function submit(event: FormEvent<HTMLFormElement>) { event.preventDefault(); void load(query.trim()); }
 
   return <section className="card stack">
     <div><h1>My Documents</h1><p className="muted">Search document names and text extracted from your scans.</p></div>
-    <form className="search" onSubmit={submit}><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search OCR text or filename" aria-label="Search documents" /><button type="submit">Search</button><button type="button" className="secondary" onClick={() => { setQuery(""); void load(); }}>Clear</button></form>
+    <form className="search" onSubmit={submit}><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search OCR text, filename, or COR / OGR" aria-label="Search documents" /><button type="submit">Search</button><button type="button" className="secondary" onClick={() => { setQuery(""); void load(); }}>Clear</button></form>
     {message && <p className="muted" aria-live="polite">{message}</p>}
-    <div className="document-list">{documents.map((document) => <article key={document.id} className="document-row"><div><strong>{document.originalName}</strong><p className="muted">{document.category} · {document.ocrStatus}</p>{document.snippet && <p className="snippet">{document.snippet}</p>}</div><div className="row-actions"><time className="muted" dateTime={document.uploadedAt}>{new Date(document.uploadedAt).toLocaleDateString()}</time><button type="button" className="secondary" onClick={() => setPreviewDocument(document)}>View</button>{document.ocrStatus === "failed" && <button type="button" className="secondary" onClick={() => void retryOcr(document)}>Retry OCR</button>}<button type="button" className="danger" onClick={() => void deleteDocument(document)}>Delete</button></div></article>)}</div>
+    <div className="document-list">{documents.map((document) => <article key={document.id} className="document-row"><div><strong>{document.originalName}</strong><p className="muted">{document.category} · {document.ocrStatus}{document.matchType && <span className="match-tag">{document.matchType.replace("_", " ")} match</span>}</p>{document.snippet && <p className="snippet">{document.snippet}</p>}</div><div className="row-actions"><time className="muted" dateTime={document.uploadedAt}>{new Date(document.uploadedAt).toLocaleDateString()}</time><button type="button" className="secondary" onClick={() => setPreviewDocument(document)}>View</button>{document.ocrStatus === "failed" && <button type="button" className="secondary" onClick={() => void retryOcr(document)}>Retry OCR</button>}<button type="button" className="danger" onClick={() => void deleteDocument(document)}>Delete</button></div></article>)}</div>
     {previewDocument && <DocumentPreview document={previewDocument} onClose={() => setPreviewDocument(null)} />}
   </section>;
 }

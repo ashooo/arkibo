@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
-import { desc, eq, ilike, or } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { getDb } from "@/db/client";
 import { documents } from "@/db/schema";
-import { searchSnippet, serializeDocument } from "@/lib/server/documents";
+import { serializeDocument } from "@/lib/server/documents";
+import { searchDocuments } from "@/lib/server/document-search";
 import { LumenError, uploadToLumen } from "@/lib/server/lumen";
 import { removeStoredUpload, storeUpload, UploadValidationError } from "@/lib/server/uploads";
 
@@ -11,9 +12,7 @@ export const runtime = "nodejs";
 export async function GET(request: Request) {
   try {
     const query = new URL(request.url).searchParams.get("q")?.trim() ?? "";
-    const where = query ? or(ilike(documents.originalName, `%${query}%`), ilike(documents.ocrText, `%${query}%`)) : undefined;
-    const rows = await getDb().select().from(documents).where(where).orderBy(desc(documents.uploadedAt)).limit(50);
-    return NextResponse.json({ documents: rows.map((row) => ({ ...serializeDocument(row), snippet: searchSnippet(row.ocrText, query) })) });
+    return NextResponse.json({ documents: await searchDocuments(query) });
   } catch {
     return NextResponse.json({ error: "Unable to retrieve documents." }, { status: 500 });
   }
