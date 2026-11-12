@@ -42,7 +42,11 @@ interface StudentContextType {
 const StudentContext = createContext<StudentContextType | undefined>(undefined);
 
 export function StudentProvider({ children }: { children: React.ReactNode }) {
-  const [applicationType, setAppTypeState] = useState<ApplicationType>("renewal");
+  const [applicationType, setAppTypeState] = useState<ApplicationType>(() => {
+    if (typeof window === "undefined") return "renewal";
+    const saved = localStorage.getItem("scholarready_app_type");
+    return saved === "new" || saved === "renewal" ? saved : "renewal";
+  });
   const [user, setUser] = useState<AccountUser | null>(null);
   const [accountLoading, setAccountLoading] = useState(true);
   const profile = user?.profile;
@@ -55,10 +59,6 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
     }).catch(() => {}).finally(() => {
       if (active) setAccountLoading(false);
     });
-    const saved = localStorage.getItem("scholarready_app_type") as ApplicationType | null;
-    if (saved === "new" || saved === "renewal") {
-      setAppTypeState(saved);
-    }
     return () => { active = false; };
   }, []);
 

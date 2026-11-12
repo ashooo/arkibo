@@ -15,6 +15,20 @@
       "when": 1794513557614,
       "tag": "0001_magenta_prima",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794518012425,
+      "tag": "0002_striped_prodigy",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1794518012426,
+      "tag": "0003_ranked_document_search",
+      "breakpoints": true
     }
   ]
 }

@@ -17,11 +17,14 @@ data/local-postgres/
 *.sql
 !src/db/migrations/*.sql
 *.dump
+!src/db/migrations/**/*.sql
 
 # Tooling
 *.tsbuildinfo
 npm-debug.log*
 yarn-debug.log*
 pnpm-debug.log*
+dev-server*.log
+server.log
 .DS_Store
 

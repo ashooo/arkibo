@@ -2,13 +2,20 @@ export type ApplicationType = "new" | "renewal";
 export type OcrStatus = "pending" | "complete" | "failed";
 export type ChecklistStatus = "missing" | "uploaded" | "prepared" | "needs_attention";
 
+export interface StudentProfile { id: string; displayName: string; applicationType: ApplicationType; }
+export interface AcademicTerm { id: string; studentId: string; academicYear: string; semester: string; }
+
 export interface StoredDocument {
   id: string;
+  studentId: string | null;
   originalName: string;
   mimeType: string;
   category: string;
+  providerDocumentId: string | null;
   ocrText: string | null;
   ocrStatus: OcrStatus;
+  ocrError: string | null;
+  uploadedAt: string;
 }
 
 export interface ChecklistItem {

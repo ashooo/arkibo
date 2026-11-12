@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useTheme } from "next-themes";
 import { Sun, Moon } from "lucide-react";
 import { toast } from "sonner";
@@ -13,18 +13,6 @@ interface ThemeToggleProps {
 
 export function ThemeToggle({ className, showLabel = false }: ThemeToggleProps) {
   const { theme, setTheme, resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    return (
-      <div className={cn("w-9 h-9 rounded-lg bg-slate-100 dark:bg-dark-card border border-slate-border dark:border-dark-border", className)} />
-    );
-  }
-
   const isDark = resolvedTheme === "dark";
 
   const handleToggle = () => {
