@@ -4,6 +4,7 @@ node_modules/
 out/
 
 # Local configuration and secrets
+.agents/
 .env
 .env.local
 .env.*.local
