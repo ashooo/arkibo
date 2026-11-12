@@ -7,6 +7,7 @@ import { serializeDocument } from "@/lib/server/documents";
 import { searchDocuments } from "@/lib/server/document-search";
 import { LumenError, uploadToLumen } from "@/lib/server/lumen";
 import { removeStoredUpload, storeUpload, UploadValidationError } from "@/lib/server/uploads";
+import { MAX_DOCUMENT_BYTES } from "@/lib/document-upload";
 
 export const runtime = "nodejs";
 
@@ -24,6 +25,9 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const access = await workspaceAccess(request);
   if (access.error) return access.error;
+  if (!request.headers.get("content-type")?.startsWith("multipart/form-data")) return NextResponse.json({ error: "Choose a document to upload." }, { status: 415 });
+  const contentLength = Number(request.headers.get("content-length") ?? 0);
+  if (contentLength > MAX_DOCUMENT_BYTES + 64 * 1024) return NextResponse.json({ error: "This upload exceeds the 10 MiB file limit." }, { status: 413 });
   let storagePath: string | undefined;
   try {
     const formData = await request.formData();

@@ -1,9 +1,7 @@
 import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
 import path from "node:path";
-
-const MAX_DOCUMENT_BYTES = 10 * 1024 * 1024;
-const ACCEPTED_MIME_TYPES = new Set(["application/pdf", "image/png", "image/jpeg", "image/tiff", "image/webp"]);
+import { uploadError } from "../document-upload";
 
 export class UploadValidationError extends Error {}
 export function getUploadDirectory() {
@@ -11,10 +9,8 @@ export function getUploadDirectory() {
 }
 
 export function validateUpload(file: File) {
-  if (!file.name) throw new UploadValidationError("A file name is required.");
-  if (!ACCEPTED_MIME_TYPES.has(file.type)) throw new UploadValidationError("Only PDF, PNG, JPEG, TIFF, and WebP files are supported.");
-  if (file.size === 0) throw new UploadValidationError("The uploaded file is empty.");
-  if (file.size > MAX_DOCUMENT_BYTES) throw new UploadValidationError("The uploaded file exceeds the 10 MiB limit.");
+  const error = uploadError(file);
+  if (error) throw new UploadValidationError(error);
 }
 
 function safeExtension(name: string) {
