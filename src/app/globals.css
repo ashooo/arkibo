@@ -7,13 +7,13 @@
     --font-plus-jakarta: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     --font-jetbrains-mono: "JetBrains Mono", monospace;
 
-    --bg-page: #faf8ff;
-    --text-page: #131b2e;
+    --bg-page: #e8eaf0;
+    --text-page: #20223a;
     --border-color: #e2e8f0;
   }
 
   .dark {
-    --bg-page: #090d16;
+    --bg-page: #111120;
     --text-page: #f8fafc;
     --border-color: #232d42;
   }
@@ -25,6 +25,52 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     transition: background-color 0.2s ease, color 0.2s ease;
+  }
+}
+
+@layer components {
+  .dark .text-primary, .dark .text-primary-dark { color: #fdba8c; }
+  .portal-frame {
+    height: 100dvh;
+    min-width: 0;
+    margin-inline: auto;
+    max-width: 100rem;
+  }
+
+  @media (min-width: 1024px) {
+    .portal-frame {
+      height: calc(100dvh - 3rem);
+      margin: 1.5rem auto;
+      width: calc(100% - 3rem);
+      overflow: clip;
+      border-radius: 1.5rem;
+      box-shadow: 0 18px 56px rgb(31 34 59 / 12%);
+    }
+    .portal-landing {
+      min-height: calc(100dvh - 3rem);
+      width: calc(100% - 3rem);
+      max-width: 100rem;
+      margin: 1.5rem auto;
+      border-radius: 1.5rem;
+      overflow: clip;
+      box-shadow: 0 18px 56px rgb(31 34 59 / 12%);
+    }
+  }
+
+  .dashboard-metric {
+    @apply flex min-h-32 items-center justify-between gap-3 rounded-2xl p-5;
+    color: var(--metric-ink);
+    background: linear-gradient(115deg, var(--metric-start), var(--metric-end));
+  }
+
+  .dashboard-metric[data-tone="peach"] { --metric-start: #ffad7a; --metric-end: #ffd1b1; --metric-ink: #592909; }
+  .dashboard-metric[data-tone="lavender"] { --metric-start: #b6a9f8; --metric-end: #d2c8ff; --metric-ink: #33266a; }
+  .dashboard-metric[data-tone="aqua"] { --metric-start: #66d4e9; --metric-end: #a5eef4; --metric-ink: #124850; }
+  .dashboard-metric[data-tone="indigo"] { --metric-start: #3a417e; --metric-end: #535d9f; --metric-ink: #fff; }
+
+  .dashboard-metric-icon {
+    @apply flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white;
+    color: #353863;
   }
 }
 

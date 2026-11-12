@@ -17,8 +17,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="bg-surface dark:bg-dark-bg text-on-surface dark:text-slate-100 antialiased min-h-screen">
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <body className="text-on-surface dark:text-slate-100 antialiased min-h-screen">
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           <StudentProvider>
             {children}
             <Toaster position="bottom-right" richColors closeButton theme="system" />

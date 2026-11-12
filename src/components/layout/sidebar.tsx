@@ -45,8 +45,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       name: "Scanner & OCR",
       href: "/scanner",
       icon: ScanText,
-      badge: "Lumen",
-      badgeColor: "bg-primary-soft dark:bg-blue-950/60 text-primary dark:text-blue-300",
+      badge: null,
     },
     {
       name: "My Documents",
@@ -64,8 +63,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       name: "Announcements",
       href: "/notifications",
       icon: Bell,
-      badge: "Sample",
-      badgeColor: "bg-slate-100 dark:bg-dark-cardAlt text-slate-600 dark:text-slate-400",
+      badge: null,
     },
   ];
 
@@ -82,7 +80,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       {/* Sidebar Container */}
       <aside
         className={cn(
-          "fixed top-0 bottom-0 left-0 z-50 flex w-72 flex-col justify-between bg-surface-low dark:bg-dark-surface border-r border-outline-variant/30 dark:border-dark-border p-space-lg transition-transform duration-300 ease-in-out lg:translate-x-0",
+          "fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 flex-col justify-between overflow-y-auto border-r border-slate-border bg-white p-5 transition-transform duration-300 ease-in-out dark:border-dark-border dark:bg-dark-surface lg:static lg:w-56 lg:translate-x-0",
           isOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
@@ -91,8 +89,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           <div className="flex flex-col gap-1">
             <div className="flex items-center justify-between">
               <Link href="/dashboard" className="flex items-center gap-space-sm group">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-white shadow-sm font-bold text-lg group-hover:scale-105 transition-transform">
-                  SR
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary-dark dark:bg-orange-950 dark:text-orange-200">
+                  <GraduationCap aria-hidden="true" size={21} />
                 </div>
                 <span className="font-bold text-xl text-primary tracking-tight group-hover:text-primary-light transition-colors">
                   ScholarReady
@@ -130,16 +128,17 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                 <Link
                   key={item.href}
                   href={item.href}
+                  aria-current={isActive ? "page" : undefined}
                   onClick={onClose}
                   className={cn(
                     "flex items-center justify-between px-space-md py-2.5 rounded-lg text-sm font-semibold transition-all select-none active:scale-[0.98]",
                     isActive
-                      ? "bg-primary text-white shadow-sm"
+                      ? "bg-primary-soft text-primary-dark dark:bg-orange-950/60 dark:text-orange-200"
                       : "text-slate-600 dark:text-slate-300 hover:bg-surface-container-high dark:hover:bg-dark-cardAlt hover:text-on-surface dark:hover:text-white"
                   )}
                 >
                   <div className="flex items-center gap-space-sm min-w-0">
-                    <Icon className={cn("w-4 h-4 shrink-0", isActive ? "text-white" : "text-slate-400 dark:text-slate-500")} />
+                    <Icon className={cn("w-4 h-4 shrink-0", isActive ? "text-primary dark:text-orange-300" : "text-slate-500 dark:text-slate-400")} />
                     <span className="truncate">{item.name}</span>
                   </div>
 
@@ -147,7 +146,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                     <span
                       className={cn(
                         "px-2 py-0.5 rounded-full text-[11px] font-bold shrink-0 ml-1.5",
-                        isActive ? "bg-white/20 text-white" : item.badgeColor
+                        isActive ? "bg-white text-primary-dark dark:bg-orange-950 dark:text-orange-200" : item.badgeColor
                       )}
                     >
                       {item.badge}

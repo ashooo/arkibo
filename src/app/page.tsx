@@ -29,13 +29,13 @@ export default function OnboardingLandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-surface dark:bg-dark-bg text-on-surface dark:text-slate-100 flex flex-col justify-between transition-colors">
+    <div className="portal-landing min-h-screen bg-surface dark:bg-dark-bg text-on-surface dark:text-slate-100 flex flex-col justify-between transition-colors">
       {/* Top Header */}
-      <header className="w-full border-b border-outline-variant/30 dark:border-dark-border bg-surface/80 dark:bg-dark-surface/80 backdrop-blur-md sticky top-0 z-30">
+      <header className="sticky top-0 z-30 w-full border-b border-slate-border bg-white dark:border-dark-border dark:bg-dark-surface">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-white font-bold text-lg shadow-sm">
-              SR
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-soft text-primary-dark dark:bg-orange-950 dark:text-orange-200">
+              <GraduationCap aria-hidden="true" size={21} />
             </div>
             <div className="flex items-center gap-2">
               <span className="font-bold text-xl text-primary tracking-tight">
@@ -69,7 +69,7 @@ export default function OnboardingLandingPage() {
 
         {/* Hero Title & Subtitle */}
         <div className="text-center max-w-2xl mb-10">
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-on-surface dark:text-slate-100 tracking-tight leading-tight">
+          <h1 className="text-3xl sm:text-5xl font-bold text-on-surface dark:text-slate-100 tracking-tight leading-tight">
             Prepare Your Scholarship Requirements <span className="text-primary">in Minutes</span>
           </h1>
           <p className="mt-3 text-sm sm:text-base text-on-surface-variant dark:text-slate-400 leading-relaxed">

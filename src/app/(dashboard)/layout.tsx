@@ -12,7 +12,7 @@ export default function DashboardLayout({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <div className="flex h-dvh bg-surface dark:bg-dark-bg">
+    <div className="portal-frame flex bg-surface dark:bg-dark-bg">
       {/* Permanent on Desktop, Drawer on Mobile */}
       <Sidebar
         isOpen={isMobileMenuOpen}
@@ -20,7 +20,7 @@ export default function DashboardLayout({
       />
 
       {/* Main Content Viewport */}
-      <div className="flex min-w-0 flex-1 flex-col lg:pl-72">
+      <div className="flex min-w-0 flex-1 flex-col">
         <Topbar onMenuClick={() => setIsMobileMenuOpen(true)} />
 
         <main className="min-h-0 flex-1 overflow-y-auto">

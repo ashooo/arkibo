@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { usePathname } from "next/navigation";
 import { useStudent } from "@/lib/student-context";
 import {
   School,
@@ -16,13 +17,23 @@ interface TopbarProps {
   onMenuClick?: () => void;
 }
 
+const pageNames: Record<string, string> = {
+  "/dashboard": "Dashboard",
+  "/checklist": "Checklist",
+  "/scanner": "Scanner & OCR",
+  "/documents": "My Documents",
+  "/grades": "Grades",
+  "/notifications": "Announcements",
+};
+
 export function Topbar({ onMenuClick }: TopbarProps) {
   const { student, applicationType, toggleApplicationType } = useStudent();
+  const pageName = pageNames[usePathname()] ?? "ScholarReady";
 
   return (
-    <header className="relative z-30 flex h-20 shrink-0 items-center justify-between border-b border-outline-variant/30 bg-surface px-4 transition-colors dark:border-dark-border dark:bg-dark-surface sm:px-6 lg:px-8">
+    <header className="relative z-30 flex h-[4.5rem] shrink-0 items-center justify-between gap-3 border-b border-slate-border bg-white px-4 transition-colors dark:border-dark-border dark:bg-dark-surface sm:px-6 lg:px-8">
       {/* Left: Mobile Menu & Institution */}
-      <div className="flex items-center gap-3">
+      <div className="flex min-w-0 items-center gap-3">
         <button
           onClick={onMenuClick}
           className="p-2 rounded-lg text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-dark-cardAlt lg:hidden transition-colors"
@@ -31,16 +42,16 @@ export function Topbar({ onMenuClick }: TopbarProps) {
           <Menu className="w-5 h-5" />
         </button>
 
-        <div className="flex items-center gap-2.5 text-xs text-on-surface-variant dark:text-slate-400 font-medium">
-          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary-soft dark:bg-blue-950/60 text-primary dark:text-blue-300">
+        <div className="flex min-w-0 items-center gap-2.5 text-xs text-on-surface-variant dark:text-slate-400 font-medium">
+          <div className="hidden shrink-0 items-center justify-center w-8 h-8 rounded-lg bg-primary-soft dark:bg-orange-950/60 text-primary dark:text-orange-300 sm:flex">
             <School className="w-4 h-4" />
           </div>
-          <div className="flex flex-col">
-            <span className="font-bold text-on-surface dark:text-slate-100 text-sm">
-              {student.school}
+          <div className="flex min-w-0 flex-col">
+            <span className="truncate font-bold text-on-surface dark:text-slate-100 text-sm sm:text-base">
+              {pageName}
             </span>
-            <span className="text-[11px] text-slate-500 dark:text-slate-400">
-              {student.program}
+            <span className="hidden truncate text-[11px] text-slate-500 dark:text-slate-400 sm:block">
+              {student.school}
             </span>
           </div>
         </div>

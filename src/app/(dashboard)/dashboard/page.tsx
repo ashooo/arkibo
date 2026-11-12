@@ -187,83 +187,22 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* 2. 4-Grid Key Metrics */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        {/* Metric 1: GWA */}
-        <div className="rounded-xl bg-white dark:bg-dark-card border border-slate-border dark:border-dark-border p-5 flex flex-col justify-between shadow-subtle hover:shadow-card hover:-translate-y-0.5 transition-all">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-[11px] font-bold uppercase tracking-wider">
-              Grade Average (GWA)
-            </span>
-            <div className="p-1.5 rounded-lg bg-secondary-soft dark:bg-emerald-950/60 text-secondary">
-              <Award className="w-4 h-4" />
+      <section aria-label="Scholarship overview" className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {[
+          { label: "Grade average", value: "1.44", detail: "Demo GWA · 2.00 or better", Icon: Award, tone: "peach" },
+          { label: "Units completed", value: "54", detail: "Demo record · 144 total units", Icon: BookOpen, tone: "lavender" },
+          { label: "Checklist ready", value: `${progressPercent}%`, detail: `${doneCount} of ${totalCount} requirements`, Icon: CheckCircle2, tone: "aqua" },
+          { label: "Days remaining", value: "12", detail: "Demo application deadline", Icon: Clock, tone: "indigo" },
+        ].map(({ label, value, detail, Icon, tone }) => (
+          <div className="dashboard-metric" data-tone={tone} key={label}>
+            <div className="min-w-0 space-y-1">
+              <p className="text-3xl font-bold tracking-tight tabular-nums">{value}</p>
+              <h2 className="text-sm font-semibold">{label}</h2>
+              <p className="text-xs leading-relaxed">{detail}</p>
             </div>
+            <span className="dashboard-metric-icon"><Icon aria-hidden="true" size={22} /></span>
           </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-3xl font-extrabold text-on-surface dark:text-slate-100 font-mono">1.44</span>
-            <Badge variant="success" size="sm">Qualified</Badge>
-          </div>
-          <p className="text-xs text-on-surface-variant dark:text-slate-400 mt-1">
-            Retention: 2.00 or better
-          </p>
-        </div>
-
-        {/* Metric 2: Units Passed */}
-        <div className="rounded-xl bg-white dark:bg-dark-card border border-slate-border dark:border-dark-border p-5 flex flex-col justify-between shadow-subtle hover:shadow-card hover:-translate-y-0.5 transition-all">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-[11px] font-bold uppercase tracking-wider">
-              Units Completed
-            </span>
-            <div className="p-1.5 rounded-lg bg-primary-soft dark:bg-blue-950/60 text-primary">
-              <BookOpen className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-3xl font-extrabold text-on-surface dark:text-slate-100 font-mono">54</span>
-            <Badge variant="primary" size="sm">Passing</Badge>
-          </div>
-          <p className="text-xs text-on-surface-variant dark:text-slate-400 mt-1">
-            54 of 144 curriculum units
-          </p>
-        </div>
-
-        {/* Metric 3: Progress */}
-        <div className="rounded-xl bg-white dark:bg-dark-card border border-slate-border dark:border-dark-border p-5 flex flex-col justify-between shadow-subtle hover:shadow-card hover:-translate-y-0.5 transition-all">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-[11px] font-bold uppercase tracking-wider">
-              Progress
-            </span>
-            <div className="p-1.5 rounded-lg bg-tertiary-soft dark:bg-amber-950/60 text-tertiary">
-              <CheckCircle2 className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-3xl font-extrabold text-tertiary font-mono">{progressPercent}%</span>
-            <Badge variant="warning" size="sm">{doneCount}/{totalCount} Ready</Badge>
-          </div>
-          <p className="text-xs text-on-surface-variant dark:text-slate-400 mt-1">
-            {totalCount - doneCount} document remaining
-          </p>
-        </div>
-
-        {/* Metric 4: Days Remaining */}
-        <div className="rounded-xl bg-white dark:bg-dark-card border border-slate-border dark:border-dark-border p-5 flex flex-col justify-between shadow-subtle hover:shadow-card hover:-translate-y-0.5 transition-all">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-[11px] font-bold uppercase tracking-wider">
-              Days Remaining
-            </span>
-            <div className="p-1.5 rounded-lg bg-slate-100 dark:bg-dark-cardAlt text-slate-700 dark:text-slate-300">
-              <Clock className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-3xl font-extrabold text-on-surface dark:text-slate-100 font-mono">12</span>
-            <Badge variant="error" size="sm">Days Left</Badge>
-          </div>
-          <p className="text-xs text-on-surface-variant dark:text-slate-400 mt-1">
-            Deadline: Feb 28, 2025
-          </p>
-        </div>
+        ))}
       </section>
 
       {/* 3. Main Section: Two Columns (Action Center & Lumen OCR) */}
