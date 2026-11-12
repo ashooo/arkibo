@@ -20,7 +20,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
   const { student, applicationType, toggleApplicationType } = useStudent();
 
   return (
-    <header className="fixed top-0 left-0 lg:left-72 right-0 h-20 bg-surface/90 dark:bg-dark-surface/90 backdrop-blur-xl border-b border-outline-variant/30 dark:border-dark-border z-30 flex items-center justify-between px-4 sm:px-6 lg:px-8 transition-colors">
+    <header className="relative z-30 flex h-20 shrink-0 items-center justify-between border-b border-outline-variant/30 bg-surface px-4 transition-colors dark:border-dark-border dark:bg-dark-surface sm:px-6 lg:px-8">
       {/* Left: Mobile Menu & Institution */}
       <div className="flex items-center gap-3">
         <button
