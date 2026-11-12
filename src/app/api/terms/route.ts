@@ -1,9 +1,12 @@
+import { workspaceAccess } from "@/lib/server/workspace-access";
 import { NextResponse } from "next/server";
 import { asc, eq } from "drizzle-orm";
 import { getDb } from "@/db/client";
 import { academicTerms } from "@/db/schema";
 
 export async function GET(request: Request) {
+  const access = await workspaceAccess(request);
+  if (access.error) return access.error;
   try {
     const studentId = new URL(request.url).searchParams.get("studentId");
     if (!studentId) return NextResponse.json({ error: "studentId is required." }, { status: 400 });
@@ -13,6 +16,8 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const access = await workspaceAccess(request);
+  if (access.error) return access.error;
   try {
     const body = await request.json() as { studentId?: unknown; academicYear?: unknown; semester?: unknown };
     if (typeof body.studentId !== "string" || typeof body.academicYear !== "string" || typeof body.semester !== "string") return NextResponse.json({ error: "studentId, academicYear, and semester are required." }, { status: 400 });

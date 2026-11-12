@@ -1,4 +1,4 @@
-import { desc, ilike, or, sql } from "drizzle-orm";
+import { and, eq, desc, ilike, or, sql } from "drizzle-orm";
 import { getDb } from "@/db/client";
 import { documents } from "@/db/schema";
 import { matchTypeForDocument, expandSearchTerms, isExactOnlySearch, SEARCH_SIMILARITY_THRESHOLD, type SearchMatchType } from "@/lib/search/document-search";
@@ -16,10 +16,10 @@ function makeSnippet(text: string | null, terms: string[]) {
   return null;
 }
 
-export async function searchDocuments(query: string): Promise<RankedDocument[]> {
+export async function searchDocuments(query: string, studentId: string): Promise<RankedDocument[]> {
   const terms = expandSearchTerms(query);
   if (!terms.length) {
-    const rows = await getDb().select().from(documents).orderBy(desc(documents.uploadedAt)).limit(50);
+    const rows = await getDb().select().from(documents).where(eq(documents.studentId, studentId)).orderBy(desc(documents.uploadedAt)).limit(50);
     return rows.map((row) => ({ ...serializeDocument(row), snippet: null, matchType: "full_text", score: 0 }));
   }
 
@@ -40,14 +40,14 @@ export async function searchDocuments(query: string): Promise<RankedDocument[]> 
   )`);
 
   try {
-    const result = await getDb().execute<RawRow>(sql`SELECT ${sql.raw('"documents".*')}, greatest(${sql.join(scoreTerms, sql`, `)}) AS search_score FROM ${documents} WHERE ${sql.join(conditions, sql` OR `)} ORDER BY search_score DESC, ${documents.uploadedAt} DESC LIMIT 50`);
+    const result = await getDb().execute<RawRow>(sql`SELECT ${sql.raw('"documents".*')}, greatest(${sql.join(scoreTerms, sql`, `)}) AS search_score FROM ${documents} WHERE ${documents.studentId} = ${studentId} AND (${sql.join(conditions, sql` OR `)}) ORDER BY search_score DESC, ${documents.uploadedAt} DESC LIMIT 50`);
     const rows = ("rows" in result ? result.rows : result) as RawRow[];
     return rows.map((row) => {
       const document = serializeDocument({ id: row.id, studentId: row.student_id, originalName: row.original_name, mimeType: row.mime_type, storagePath: row.storage_path, category: row.category, providerDocumentId: row.provider_document_id, ocrText: row.ocr_text, ocrStatus: row.ocr_status, ocrError: row.ocr_error, uploadedAt: new Date(row.uploaded_at) });
       return { ...document, snippet: makeSnippet(document.ocrText, terms), matchType: matchTypeForDocument(document, query, terms), score: Number(row.search_score) };
     });
   } catch {
-    const fallback = await getDb().select().from(documents).where(or(...terms.map((term) => or(ilike(documents.originalName, `%${term}%`), ilike(documents.category, `%${term}%`), ilike(documents.ocrText, `%${term}%`))))).orderBy(desc(documents.uploadedAt)).limit(50);
+    const fallback = await getDb().select().from(documents).where(and(eq(documents.studentId, studentId), or(...terms.map((term) => or(ilike(documents.originalName, `%${term}%`), ilike(documents.category, `%${term}%`), ilike(documents.ocrText, `%${term}%`)))))).orderBy(desc(documents.uploadedAt)).limit(50);
     return fallback.map((row) => ({ ...serializeDocument(row), snippet: makeSnippet(row.ocrText, terms), matchType: matchTypeForDocument(row, query, terms), score: 0 }));
   }
 }

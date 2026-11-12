@@ -1,3 +1,4 @@
+import { workspaceAccess } from "@/lib/server/workspace-access";
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/db/client";
@@ -10,22 +11,26 @@ import { removeStoredUpload, storeUpload, UploadValidationError } from "@/lib/se
 export const runtime = "nodejs";
 
 export async function GET(request: Request) {
+  const access = await workspaceAccess(request);
+  if (access.error) return access.error;
   try {
     const query = new URL(request.url).searchParams.get("q")?.trim() ?? "";
-    return NextResponse.json({ documents: await searchDocuments(query) });
+    return NextResponse.json({ documents: await searchDocuments(query, access.studentId) });
   } catch {
     return NextResponse.json({ error: "Unable to retrieve documents." }, { status: 500 });
   }
 }
 
 export async function POST(request: Request) {
+  const access = await workspaceAccess(request);
+  if (access.error) return access.error;
   let storagePath: string | undefined;
   try {
     const formData = await request.formData();
     const file = formData.get("file");
     if (!(file instanceof File)) return NextResponse.json({ error: "A file field is required." }, { status: 400 });
     const category = typeof formData.get("category") === "string" ? String(formData.get("category")).slice(0, 80) || "others" : "others";
-    const studentId = typeof formData.get("studentId") === "string" ? String(formData.get("studentId")).trim() || null : null;
+    const studentId = access.studentId;
     storagePath = await storeUpload(file);
     const [record] = await getDb().insert(documents).values({ studentId, originalName: file.name, mimeType: file.type, storagePath, category }).returning();
     try {

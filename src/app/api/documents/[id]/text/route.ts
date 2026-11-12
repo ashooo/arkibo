@@ -1,3 +1,4 @@
+import { workspaceAccess } from "@/lib/server/workspace-access";
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/db/client";
@@ -7,6 +8,8 @@ import { serializeDocument } from "@/lib/server/documents";
 type Context = { params: Promise<{ id: string }> };
 
 export async function PATCH(request: Request, { params }: Context) {
+  const access = await workspaceAccess(request);
+  if (access.error) return access.error;
   try {
     const body = await request.json() as { ocrText?: unknown; ocrStatus?: unknown };
     if (typeof body.ocrText !== "string") return NextResponse.json({ error: "ocrText must be a string." }, { status: 400 });

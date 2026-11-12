@@ -1,3 +1,4 @@
+import { workspaceAccess } from "@/lib/server/workspace-access";
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/db/client";
@@ -9,6 +10,8 @@ export const runtime = "nodejs";
 type Context = { params: Promise<{ id: string }> };
 
 export async function GET(_request: Request, { params }: Context) {
+  const access = await workspaceAccess(_request);
+  if (access.error) return access.error;
   try {
     const [document] = await getDb().select().from(documents).where(eq(documents.id, (await params).id)).limit(1);
     if (!document) return NextResponse.json({ error: "Document not found." }, { status: 404 });

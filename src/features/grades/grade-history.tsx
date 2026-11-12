@@ -15,8 +15,7 @@ export function GradeHistory() {
   const [sourceDocuments, setSourceDocuments] = useState<StoredDocument[]>([]);
   const [sourceDocumentId, setSourceDocumentId] = useState("");
   const [drafts, setDrafts] = useState<GradeDraft[]>([]);
-  const [message, setMessage] = useState("Create or select a local demo profile to begin.");
-  const [creatingProfile, setCreatingProfile] = useState(false);
+  const [message, setMessage] = useState("Loading your account profile…");
 
   useEffect(() => {
     void fetch("/api/students").then(async (response) => ({ response, payload: await response.json().catch(() => ({})) as { students?: StudentProfile[] } & ApiError })).then(({ response, payload }) => {
@@ -49,17 +48,6 @@ export function GradeHistory() {
       setGrades(payload.grades ?? []);
     }).catch(() => setMessage("Unable to load grades."));
   }, [termId]);
-
-  async function createProfile(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    setCreatingProfile(true);
-    const response = await fetch("/api/students", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ displayName: form.get("displayName"), applicationType: form.get("applicationType") }) });
-    const payload = await response.json().catch(() => ({})) as { student?: StudentProfile } & ApiError;
-    setCreatingProfile(false);
-    if (!response.ok || !payload.student) { setMessage(payload.error ?? "Unable to create profile."); return; }
-    setProfiles((current) => [...current, payload.student!]); setStudentId(payload.student.id); setTerms([]); setTermId(""); setGrades([]); setMessage(""); event.currentTarget.reset();
-  }
 
   async function createTerm(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); if (!studentId) return;
@@ -97,8 +85,7 @@ export function GradeHistory() {
 
   return <section className="card stack"><div><h1>Grade History</h1><p className="muted">OCR can help you read an OGR, but you must review every row before marking it verified.</p></div>
     {message && <p className="notice" aria-live="polite">{message}</p>}
-    <label className="field"><span>Student profile</span><select value={studentId} onChange={(event) => { setStudentId(event.target.value); setTerms([]); setTermId(""); setGrades([]); }}><option value="">Select a profile</option>{profiles.map((profile) => <option key={profile.id} value={profile.id}>{profile.displayName} · {profile.applicationType}</option>)}</select></label>
-    <details><summary>Create local demo profile</summary><form className="inline-form" onSubmit={createProfile}><input name="displayName" placeholder="Display name" required /><select name="applicationType" defaultValue="new"><option value="new">New Applicant</option><option value="renewal">Renewal Scholar</option></select><button disabled={creatingProfile}>{creatingProfile ? "Creating…" : "Create profile"}</button></form></details>
+    <p className="muted">{profiles[0]?.displayName} · {profiles[0]?.applicationType}</p>
     {studentId && <><form className="inline-form" onSubmit={createTerm}><input name="academicYear" placeholder="Academic year (e.g. 2026-2027)" required /><input name="semester" placeholder="Semester (e.g. First Semester)" required /><button>Create term</button></form>
     <label className="field"><span>Academic term</span><select value={termId} onChange={(event) => { setTermId(event.target.value); setGrades([]); }}><option value="">Select a term</option>{terms.map((term) => <option key={term.id} value={term.id}>{term.academicYear} · {term.semester}</option>)}</select></label></>}
     {termId && <><label className="field"><span>Optional OGR source</span><select value={sourceDocumentId} onChange={(event) => setSourceDocumentId(event.target.value)}><option value="">Manual entry — no source document</option>{sourceDocuments.map((document) => <option key={document.id} value={document.id}>{document.originalName}</option>)}</select></label>

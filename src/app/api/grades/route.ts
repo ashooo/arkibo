@@ -1,9 +1,12 @@
+import { workspaceAccess } from "@/lib/server/workspace-access";
 import { NextResponse } from "next/server";
 import { asc, eq } from "drizzle-orm";
 import { getDb } from "@/db/client";
 import { gradeEntries } from "@/db/schema";
 
 export async function GET(request: Request) {
+  const access = await workspaceAccess(request);
+  if (access.error) return access.error;
   try {
     const termId = new URL(request.url).searchParams.get("termId");
     if (!termId) return NextResponse.json({ error: "termId is required." }, { status: 400 });
@@ -12,6 +15,8 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const access = await workspaceAccess(request);
+  if (access.error) return access.error;
   try {
     const body = await request.json() as { termId?: unknown; sourceDocumentId?: unknown; subjectCode?: unknown; subjectName?: unknown; grade?: unknown; verified?: unknown };
     if (typeof body.termId !== "string" || typeof body.subjectCode !== "string" || typeof body.subjectName !== "string" || typeof body.grade !== "string") return NextResponse.json({ error: "Term, subject code, subject name, and grade are required." }, { status: 400 });
@@ -21,6 +26,8 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
+  const access = await workspaceAccess(request);
+  if (access.error) return access.error;
   try {
     const body = await request.json() as { id?: unknown; subjectCode?: unknown; subjectName?: unknown; grade?: unknown; verified?: unknown };
     if (typeof body.id !== "string") return NextResponse.json({ error: "Grade id is required." }, { status: 400 });

@@ -1,3 +1,4 @@
+import { workspaceAccess } from "@/lib/server/workspace-access";
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/db/client";
@@ -13,6 +14,8 @@ async function findDocument(id: string) {
 }
 
 export async function GET(_request: Request, { params }: Context) {
+  const access = await workspaceAccess(_request);
+  if (access.error) return access.error;
   try {
     const record = await findDocument((await params).id);
     return record ? NextResponse.json({ document: serializeDocument(record) }) : NextResponse.json({ error: "Document not found." }, { status: 404 });
@@ -22,6 +25,8 @@ export async function GET(_request: Request, { params }: Context) {
 }
 
 export async function DELETE(_request: Request, { params }: Context) {
+  const access = await workspaceAccess(_request);
+  if (access.error) return access.error;
   try {
     const record = await findDocument((await params).id);
     if (!record) return NextResponse.json({ error: "Document not found." }, { status: 404 });

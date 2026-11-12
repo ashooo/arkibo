@@ -1,3 +1,4 @@
+import { workspaceAccess } from "@/lib/server/workspace-access";
 import { NextResponse } from "next/server";
 import { LumenError, uploadToLumen } from "@/lib/server/lumen";
 import { UploadValidationError } from "@/lib/server/uploads";
@@ -5,6 +6,8 @@ import { UploadValidationError } from "@/lib/server/uploads";
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
+  const access = await workspaceAccess(request);
+  if (access.error) return access.error;
   try {
     const formData = await request.formData();
     const file = formData.get("file");

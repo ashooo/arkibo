@@ -161,6 +161,6 @@ export async function POST(request: NextRequest) {
     });
     return response;
   } catch {
-    return failure("Account storage is unavailable. Check the local database and run npm run db:migrate.", 503);
+    return failure("Account storage is unavailable. Check the database connection and contact the developer to verify database alignment.", 503);
   }
 }

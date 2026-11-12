@@ -1,3 +1,4 @@
+import { workspaceAccess } from "@/lib/server/workspace-access";
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/db/client";
@@ -5,6 +6,8 @@ import { documents } from "@/db/schema";
 import { parseGradeDrafts } from "@/lib/server/grade-parser";
 
 export async function POST(request: Request) {
+  const access = await workspaceAccess(request);
+  if (access.error) return access.error;
   try {
     const body = await request.json() as { documentId?: unknown };
     if (typeof body.documentId !== "string") return NextResponse.json({ error: "documentId is required." }, { status: 400 });
