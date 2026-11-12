@@ -5,6 +5,7 @@ import { useTheme } from "next-themes";
 import { Sun, Moon } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useHydrated } from "@/lib/use-hydrated";
 
 interface ThemeToggleProps {
   className?: string;
@@ -12,7 +13,11 @@ interface ThemeToggleProps {
 }
 
 export function ThemeToggle({ className, showLabel = false }: ThemeToggleProps) {
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { setTheme, resolvedTheme } = useTheme();
+  const hydrated = useHydrated();
+  if (!hydrated) {
+    return <div aria-hidden="true" className={cn("w-9 h-9 rounded-lg bg-slate-100 dark:bg-dark-card", className)} />;
+  }
   const isDark = resolvedTheme === "dark";
 
   const handleToggle = () => {

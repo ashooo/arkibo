@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 
 import { accountRequest, schoolName, type AccountUser } from "@/lib/account";
 import { toast } from "sonner";
+import { useHydrated } from "@/lib/use-hydrated";
 
 export type ApplicationType = "new" | "renewal";
 
@@ -42,15 +43,18 @@ interface StudentContextType {
 const StudentContext = createContext<StudentContextType | undefined>(undefined);
 
 export function StudentProvider({ children }: { children: React.ReactNode }) {
+  const hydrated = useHydrated();
   const [applicationType, setAppTypeState] = useState<ApplicationType>(() => {
     if (typeof window === "undefined") return "renewal";
-    const saved = localStorage.getItem("scholarready_app_type");
-    return saved === "new" || saved === "renewal" ? saved : "renewal";
+    try {
+      const saved = localStorage.getItem("scholarready_app_type");
+      return saved === "new" || saved === "renewal" ? saved : "renewal";
+    } catch { return "renewal"; }
   });
   const [user, setUser] = useState<AccountUser | null>(null);
   const [accountLoading, setAccountLoading] = useState(true);
   const profile = user?.profile;
-  const currentTrack: ApplicationType = profile?.track ?? applicationType;
+  const currentTrack: ApplicationType = profile?.track ?? (hydrated ? applicationType : "renewal");
 
   useEffect(() => {
     let active = true;
