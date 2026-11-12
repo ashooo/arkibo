@@ -12,7 +12,10 @@ out/
 
 # Runtime data: never commit student files or database dumps
 data/uploads/
+data/announcement-import/
+data/local-postgres/
 *.sql
+!src/db/migrations/*.sql
 *.dump
 
 # Tooling

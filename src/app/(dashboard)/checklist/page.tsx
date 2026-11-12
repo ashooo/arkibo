@@ -3,13 +3,13 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useStudent } from "@/lib/student-context";
-import { requirementTemplates } from "@/data/requirements";
+import { requirementTemplates, type RequirementTemplate } from "@/data/requirements";
 import type { ChecklistStatus, StoredDocument } from "@/types/shared";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { CalendarDays, Check, CheckSquare, ChevronDown, FileText, GraduationCap, IdCard, LoaderCircle, MapPin, Paperclip, ReceiptText, StickyNote, Unlink, Upload, X } from "lucide-react";
+import { CalendarDays, Check, CheckSquare, ChevronDown, FileText, GraduationCap, IdCard, LoaderCircle, MapPin, Paperclip, Plus, ReceiptText, StickyNote, Unlink, Upload, X } from "lucide-react";
 
 type ItemState = { status: ChecklistStatus; notes: string; documentIds: string[] };
 type SavedState = Record<string, ItemState>;
@@ -21,20 +21,14 @@ const statusOptions: { value: ChecklistStatus; label: string; variant: "neutral"
   { value: "needs_attention", label: "Needs Attention", variant: "warning", bar: "bg-amber-500" },
   { value: "missing", label: "Missing", variant: "neutral", bar: "bg-slate-300 dark:bg-slate-600" },
 ];
-const initialRenewalStatuses: Record<string, ChecklistStatus> = {
-  "renewal-grade-report": "prepared",
-  "renewal-registration": "prepared",
-  "renewal-school-id": "prepared",
-  "renewal-barangay-certificate": "prepared",
-  "renewal-receipt": "missing",
-};
 const requirementIcons = [GraduationCap, GraduationCap, IdCard, MapPin, ReceiptText];
 const focusRing = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 dark:focus-visible:ring-offset-dark-card";
 
 function storageKey(type: string) { return `scholarready_checklist_${type}`; }
+function customRequirementsKey(type: string) { return `scholarready_custom_requirements_${type}`; }
 function defaultState(type: string): SavedState {
   return Object.fromEntries(requirementTemplates.filter((item) => item.applicationType === type).map((item) => [item.id, {
-    status: type === "renewal" ? initialRenewalStatuses[item.id] ?? "missing" : "missing",
+    status: "missing",
     notes: "",
     documentIds: [],
   }]));
@@ -53,17 +47,28 @@ export default function ChecklistPage() {
   const [deadline, setDeadline] = useState("");
   const [deadlineLoaded, setDeadlineLoaded] = useState(false);
   const [openNotes, setOpenNotes] = useState<Set<string>>(new Set());
+  const [customTemplates, setCustomTemplates] = useState<RequirementTemplate[]>([]);
+  const [customTitle, setCustomTitle] = useState("");
+  const [customDescription, setCustomDescription] = useState("");
+  const [showAddRequirement, setShowAddRequirement] = useState(false);
   const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const templates = useMemo(() => requirementTemplates.filter((item) => item.applicationType === applicationType).sort((a, b) => a.sortOrder - b.sortOrder), [applicationType]);
+  const templates = useMemo(() => [
+    ...requirementTemplates.filter((item) => item.applicationType === applicationType),
+    ...customTemplates.filter((item) => item.applicationType === applicationType),
+  ].sort((a, b) => a.sortOrder - b.sortOrder), [applicationType, customTemplates]);
 
   useEffect(() => {
     setLoaded(false);
     try {
       const saved = localStorage.getItem(storageKey(applicationType));
       setItems(saved ? { ...defaultState(applicationType), ...JSON.parse(saved) as SavedState } : defaultState(applicationType));
+      const savedCustom = localStorage.getItem(customRequirementsKey(applicationType));
+      const parsedCustom = savedCustom ? JSON.parse(savedCustom) as RequirementTemplate[] : [];
+      setCustomTemplates(Array.isArray(parsedCustom) ? parsedCustom.filter((item) => item && typeof item.id === "string" && typeof item.title === "string" && item.applicationType === applicationType) : []);
       setDeadline(localStorage.getItem(`scholarready_deadline_${applicationType}`) ?? "");
     } catch {
       setItems(defaultState(applicationType));
+      setCustomTemplates([]);
       setDeadline("");
     }
     setLoaded(true);
@@ -80,11 +85,16 @@ export default function ChecklistPage() {
   useEffect(() => { void fetchDocuments(); }, []);
 
   useEffect(() => {
-    if (!attachTo) return;
-    const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") setAttachTo(null); };
+    if (!attachTo && !showAddRequirement) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setAttachTo(null);
+        setShowAddRequirement(false);
+      }
+    };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [attachTo]);
+  }, [attachTo, showAddRequirement]);
 
   const persist = (next: SavedState) => {
     setItems(next);
@@ -125,6 +135,31 @@ export default function ChecklistPage() {
       else localStorage.removeItem(`scholarready_deadline_${applicationType}`);
     } catch { toast.error("Could not save the deadline in this browser."); }
   };
+  const addRequirement = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const title = customTitle.trim();
+    const description = customDescription.trim();
+    if (!title) return;
+    const customForTrack = customTemplates.filter((item) => item.applicationType === applicationType);
+    const requirement: RequirementTemplate = {
+      id: `custom-${crypto.randomUUID()}`,
+      applicationType,
+      title,
+      description: description || "Additional requirement added to your checklist.",
+      sortOrder: requirementTemplates.filter((item) => item.applicationType === applicationType).length + customForTrack.length + 1,
+    };
+    const nextCustom = [...customTemplates, requirement];
+    try {
+      localStorage.setItem(customRequirementsKey(applicationType), JSON.stringify(nextCustom.filter((item) => item.applicationType === applicationType)));
+      setCustomTemplates(nextCustom);
+      setCustomTitle("");
+      setCustomDescription("");
+      setShowAddRequirement(false);
+      toast.success("Requirement added to your checklist");
+    } catch {
+      toast.error("Could not save this requirement in your browser.");
+    }
+  };
   const resolveNext = () => {
     if (!incompleteRequirement) return;
     setFilter("all");
@@ -162,16 +197,21 @@ export default function ChecklistPage() {
   };
   const filters: [FilterMode, string][] = [["all", "All"], ["to_do", "To do"], ["prepared", "Prepared"], ["attention", "Needs attention"]];
 
-  return <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
-    <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+  return <div className="flex flex-col gap-6">
+    <header className="workspace-banner">
       <div>
-        <div className="mb-1.5 flex flex-wrap items-center gap-2">
-          <h1 className="text-2xl font-extrabold tracking-tight text-on-surface dark:text-slate-100 sm:text-3xl">Scholarship checklist</h1>
-          <Badge variant="primary" size="sm">{isRenewal ? "Renewal" : "New applicant"}</Badge>
+        <div className="mb-1 flex flex-wrap items-center gap-2">
+          <h1 className="text-2xl font-extrabold tracking-tight text-on-surface dark:text-slate-100 sm:text-3xl">Scholarship Checklist</h1>
+          <Badge variant="primary" size="sm">{isRenewal ? "Renewal Track" : "New Applicant Track"}</Badge>
         </div>
-        <p className="max-w-xl text-sm leading-relaxed text-on-surface-variant dark:text-slate-400">Mark each requirement as you prepare it and attach your saved documents. These are sample requirements, so confirm the current list with the scholarship office.</p>
+        <p className="text-sm leading-relaxed text-on-surface-variant dark:text-slate-400">Track your requirements, attach saved documents, and mark each step as you complete it.</p>
       </div>
-      <Link href="/scanner" className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 sm:w-auto"><Upload className="h-4 w-4" />Upload a document</Link>
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <Button type="button" variant="secondary" className="min-h-11" onClick={() => setShowAddRequirement(true)}>
+          <Plus aria-hidden="true" size={16} />Add requirement
+        </Button>
+        <Link href="/scanner" className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"><Upload className="h-4 w-4" />Upload a document</Link>
+      </div>
     </header>
 
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(280px,1fr)]">
@@ -197,7 +237,7 @@ export default function ChecklistPage() {
         </div>
       </Card>
 
-      <Card className={`p-5 sm:p-6 ${incompleteRequirement ? "border-amber-300 bg-amber-50/70 dark:border-amber-800 dark:bg-amber-950/20" : ""}`}>
+      <Card className="p-5 sm:p-6">
         <div className="flex items-center justify-between gap-3"><div className="flex items-center gap-2"><CalendarDays className={`h-5 w-5 ${incompleteRequirement ? "text-amber-700 dark:text-amber-300" : "text-primary"}`} aria-hidden="true" /><h2 className="font-bold text-on-surface dark:text-slate-100">Application deadline</h2></div><Badge variant={incompleteRequirement ? "warning" : "success"} size="sm">{incompleteRequirement ? "Action Needed" : "On track"}</Badge></div>
         <p className="mt-3 text-xl font-extrabold text-on-surface dark:text-slate-100">{deadline ? new Date(`${deadline}T00:00:00`).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" }) : "Deadline not yet announced"}</p>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{daysRemaining === null ? "Set a deadline once the scholarship office confirms it." : daysRemaining < 0 ? "This date has passed. Check with the scholarship office for updates." : daysRemaining === 0 ? "The deadline is today. Review your remaining items." : `${daysRemaining} day${daysRemaining === 1 ? "" : "s"} remaining. Keep working through your checklist.`}</p>
@@ -209,24 +249,56 @@ export default function ChecklistPage() {
       </Card>
     </div>
 
-    <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1" role="group" aria-label="Filter checklist">
-      {filters.map(([value, label]) => <Button key={value} size="sm" variant={filter === value ? "primary" : "secondary"} className="min-h-11 shrink-0" onClick={() => setFilter(value)} aria-pressed={filter === value}>{label}<span className={`ml-1.5 rounded-full px-1.5 text-xs font-bold tabular-nums ${filter === value ? "bg-white/25" : "bg-slate-100 text-slate-600 dark:bg-dark-cardAlt dark:text-slate-300"}`}>{filterCounts[value]}</span></Button>)}
-    </div>
+    {showAddRequirement && <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/50 p-0 sm:items-center sm:p-4" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setShowAddRequirement(false); }}>
+      <section role="dialog" aria-modal="true" aria-labelledby="add-requirement-title" className="max-h-[90vh] w-full max-w-lg overflow-auto rounded-t-2xl bg-white p-5 shadow-xl dark:bg-dark-card sm:rounded-2xl sm:p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary dark:bg-blue-950/60 dark:text-blue-300"><Plus aria-hidden="true" size={20} /></div>
+            <div>
+              <h2 id="add-requirement-title" className="font-bold text-on-surface dark:text-slate-100">Add a requirement</h2>
+            </div>
+          </div>
+          <button type="button" onClick={() => setShowAddRequirement(false)} className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-dark-cardAlt ${focusRing}`} aria-label="Close dialog"><X aria-hidden="true" className="h-5 w-5" /></button>
+        </div>
+        <form className="mt-5 space-y-4" onSubmit={addRequirement}>
+          <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300">Requirement name
+            <input autoFocus required maxLength={100} value={customTitle} onChange={(event) => setCustomTitle(event.target.value)} placeholder="e.g. Certificate of good moral character" className={`mt-1 min-h-11 w-full rounded-md border border-slate-border bg-white px-3 text-sm font-normal text-slate-700 placeholder:text-slate-400 dark:border-dark-border dark:bg-dark-surface dark:text-slate-200 ${focusRing}`} />
+          </label>
+          <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300">Details <span className="font-normal">(optional)</span>
+            <textarea rows={3} maxLength={240} value={customDescription} onChange={(event) => setCustomDescription(event.target.value)} placeholder="Add a note about this document" className={`mt-1 w-full resize-y rounded-md border border-slate-border bg-white px-3 py-2.5 text-sm font-normal text-slate-700 placeholder:text-slate-400 dark:border-dark-border dark:bg-dark-surface dark:text-slate-200 ${focusRing}`} />
+          </label>
+          <div className="flex justify-end gap-2 border-t border-slate-border pt-4 dark:border-dark-border">
+            <Button type="button" variant="secondary" className="min-h-11" onClick={() => setShowAddRequirement(false)}>Cancel</Button>
+            <Button type="submit" variant="primary" className="min-h-11"><Plus aria-hidden="true" size={16} />Add item</Button>
+          </div>
+        </form>
+      </section>
+    </div>}
+
+    <section aria-labelledby="requirements-heading" className="space-y-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 id="requirements-heading" className="text-xl font-semibold text-on-surface dark:text-slate-100">Your requirements</h2>
+          <p className="text-sm text-on-surface-variant dark:text-slate-400">{total} items · {totals.prepared} prepared</p>
+        </div>
+        <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1" role="group" aria-label="Filter checklist">
+          {filters.map(([value, label]) => <Button key={value} size="sm" variant={filter === value ? "primary" : "secondary"} className="min-h-10 shrink-0" onClick={() => setFilter(value)} aria-pressed={filter === value}>{label}<span className={`ml-1.5 rounded-full px-1.5 text-xs font-bold tabular-nums ${filter === value ? "bg-white/25" : "bg-slate-100 text-slate-600 dark:bg-dark-cardAlt dark:text-slate-300"}`}>{filterCounts[value]}</span></Button>)}
+        </div>
+      </div>
 
     <ul className="flex flex-col gap-3">
       {loaded && visibleTemplates.map((template) => {
         const item = getItem(template.id);
-        const status = statusOptions.find((option) => option.value === item.status)!;
         const isPrepared = item.status === "prepared";
         const Icon = requirementIcons[template.sortOrder - 1] ?? FileText;
         const notesOpen = openNotes.has(template.id) || item.notes.length > 0;
         return <li key={template.id}>
-          <Card ref={(element) => { cardRefs.current[template.id] = element; }} tabIndex={-1} className={`relative scroll-mt-24 overflow-hidden p-4 pl-5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:p-5 sm:pl-6`}>
+          <Card ref={(element) => { cardRefs.current[template.id] = element; }} tabIndex={-1} className="relative scroll-mt-24 overflow-hidden p-4 transition-shadow hover:shadow-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:p-5">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="flex min-w-0 gap-3">
                 <button type="button" role="checkbox" aria-checked={isPrepared} aria-label={`Mark ${template.title} as ${isPrepared ? "not prepared" : "prepared"}`} onClick={() => setStatus(template.id, isPrepared ? "missing" : "prepared")} className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${isPrepared ? "border-emerald-500 bg-emerald-500 text-white" : "border-slate-300 text-transparent hover:border-emerald-500 hover:text-emerald-500 dark:border-slate-600"} ${focusRing}`}><Check className="h-4 w-4" strokeWidth={3} /></button>
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary dark:bg-blue-950/50 dark:text-blue-300"><Icon className="h-5 w-5" aria-hidden="true" /></div>
-                <div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><h2 className={`font-bold ${isPrepared ? "text-slate-500 dark:text-slate-400" : "text-on-surface dark:text-slate-100"}`}>{template.title}</h2><Badge variant={status.variant} size="sm">{status.label}</Badge></div><p className="mt-1 text-sm leading-relaxed text-on-surface-variant dark:text-slate-400">{template.description}</p><p className="mt-1 text-xs text-slate-500">{template.sourceNote}</p></div>
+                <div className="min-w-0 flex-1"><h2 className={`font-bold ${isPrepared ? "text-slate-500 dark:text-slate-400" : "text-on-surface dark:text-slate-100"}`}>{template.title}</h2><p className="mt-1 text-sm leading-relaxed text-on-surface-variant dark:text-slate-400">{template.description}</p></div>
               </div>
               <label className="relative flex min-h-11 shrink-0 items-center"><span className="sr-only">Status for {template.title}</span><select value={item.status} onChange={(event) => setStatus(template.id, event.target.value as ChecklistStatus)} className={`min-h-11 w-full appearance-none rounded-lg border border-slate-border bg-white py-2 pl-3 pr-9 text-sm font-semibold text-slate-700 sm:w-48 dark:border-dark-border dark:bg-dark-card dark:text-slate-200 ${focusRing}`}>{[...statusOptions].reverse().map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select><ChevronDown className="pointer-events-none absolute right-3 h-4 w-4 text-slate-500" aria-hidden="true" /></label>
             </div>
@@ -250,6 +322,7 @@ export default function ChecklistPage() {
       {!loaded && [0, 1, 2].map((key) => <li key={key} aria-hidden="true"><div className="h-32 animate-pulse rounded-2xl bg-slate-100 dark:bg-dark-cardAlt" /></li>)}
       {!loaded && <li className="sr-only" role="status">Loading checklist…</li>}
     </ul>
+    </section>
 
     {attachTo && <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/50 p-0 sm:items-center sm:p-4" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setAttachTo(null); }}><section role="dialog" aria-modal="true" aria-labelledby="document-picker-title" className="max-h-[85vh] w-full max-w-lg overflow-auto rounded-t-2xl bg-white p-5 shadow-xl dark:bg-dark-card sm:rounded-2xl sm:p-6"><div className="flex items-start justify-between gap-4"><div><h2 id="document-picker-title" className="text-lg font-bold text-on-surface dark:text-slate-100">Attach a saved document</h2><p className="mt-1 text-sm text-slate-500">Choose a file from My Documents.</p></div><button type="button" onClick={() => setAttachTo(null)} className={`flex h-11 w-11 items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-dark-cardAlt ${focusRing}`} aria-label="Close document picker"><X className="h-5 w-5" /></button></div>
       {loadingDocs ? <div className="flex items-center justify-center gap-2 py-10 text-sm text-slate-500" role="status"><LoaderCircle className="h-4 w-4 animate-spin" />Loading documents…</div> : documents.length ? <ul className="mt-4 flex flex-col gap-2">{documents.map((document) => <li key={document.id}><button type="button" onClick={() => attachDocument(document)} className={`flex min-h-14 w-full items-center gap-3 rounded-xl border border-slate-200 p-3 text-left hover:border-primary hover:bg-primary-soft/40 dark:border-dark-border dark:hover:bg-dark-cardAlt ${focusRing}`}><FileText className="h-5 w-5 shrink-0 text-primary" /><span className="min-w-0 flex-1"><span className="block truncate text-sm font-semibold text-slate-800 dark:text-slate-100">{document.originalName}</span><span className="block text-xs text-slate-500">{document.category}</span></span><span className="text-xs font-semibold text-primary">Attach</span></button></li>)}</ul> : <div className="py-8 text-center"><FileText className="mx-auto mb-3 h-9 w-9 text-slate-400" /><p className="font-semibold text-slate-700 dark:text-slate-200">No saved documents yet</p><p className="mt-1 text-sm text-slate-500">Upload a file to My Documents, then return here to attach it.</p><Link href="/scanner" onClick={() => setAttachTo(null)} className={`mt-4 inline-flex min-h-11 items-center justify-center rounded-md bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-light ${focusRing}`}>Go to Scanner</Link></div>}

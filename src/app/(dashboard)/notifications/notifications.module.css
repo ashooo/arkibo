@@ -1,0 +1,28 @@
+.filters, .notice, .status {
+  @apply rounded-xl border border-slate-border bg-white p-5 dark:border-dark-border dark:bg-dark-card sm:p-7;
+}
+.filters {
+  @apply grid grid-cols-1 items-end gap-x-5 gap-y-6 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr];
+}
+.filters > label { @apply grid min-w-0 gap-2 text-sm font-semibold; }
+.filters > label > input {
+  @apply block min-h-11 w-full min-w-0 rounded-md border border-slate-border bg-surface px-3 text-sm font-normal dark:border-dark-border dark:bg-dark-surface;
+}
+:global(.dark) .filters input[type="date"] { color-scheme: dark; }
+.filters input:focus-visible, .link:focus-visible {
+  @apply outline outline-2 outline-offset-2 outline-primary dark:outline-blue-300;
+}
+.actions { @apply col-span-full flex flex-wrap items-center gap-x-5 gap-y-2; }
+.link { @apply inline-flex min-h-11 items-center gap-1.5 rounded-sm text-sm font-semibold text-primary underline-offset-4 hover:underline dark:text-blue-300; }
+.notice {
+  @apply rounded-2xl border-slate-border bg-white dark:border-dark-border dark:bg-dark-card;
+}
+.pageLink, .pageDisabled {
+  @apply inline-flex min-h-11 items-center gap-1 rounded-md border border-slate-border px-3 text-sm font-semibold dark:border-dark-border;
+}
+.pageLink { @apply bg-white hover:bg-surface-low focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary dark:bg-dark-card dark:hover:bg-dark-surface; }
+.pageDisabled { @apply text-on-surface-variant opacity-70 dark:text-slate-300; }
+.meta { @apply flex flex-wrap items-center gap-2 text-sm text-on-surface-variant dark:text-slate-300; }
+.meta time { @apply sm:ml-auto; }
+.status { @apply text-sm leading-relaxed; }
+.pageLink[aria-current=page] { @apply border-primary bg-primary-soft text-primary dark:bg-blue-950 dark:text-blue-200; }
