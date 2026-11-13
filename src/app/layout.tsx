@@ -5,9 +5,9 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
-  title: "ScholarReady — Pasig City Scholarship Portal",
+  title: "Arkibo — Pasig City Scholarship Portal",
   description:
-    "Student scholarship portal for Pasig City college scholars. Track requirements, digitize documents with Lumen OCR, and monitor verified grades.",
+    "Scholarship portal for learners at every education level. Track requirements, digitize documents with Lumen OCR, and monitor verified grades.",
 };
 
 export default function RootLayout({

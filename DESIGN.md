@@ -1,6 +1,6 @@
-# ScholarReady — Design System & Frontend Handoff (DESIGN.md)
+# Arkibo — Design System & Frontend Handoff (DESIGN.md)
 
-**System:** ScholarReady — Pasig City College Scholarship & Renewal Portal  
+**System:** Arkibo — Pasig City College Scholarship & Renewal Portal
 **Theme:** *Civic Academic Minimal* (Google Stitch Reference with Full Dark Mode & Sonner Toasts)  
 **Author:** Developer 4 (UI/UX & Senior Frontend Lead)  
 **Target Audience:** Developer 1 (Core OCR/Scanner/Grades), Developer 2 (Checklist), Developer 3 (News/Notifications)  
@@ -10,7 +10,7 @@
 
 ## 1. Senior UI/UX Design Principles Applied
 
-ScholarReady follows proven interaction design principles to deliver an intuitive experience for tertiary students:
+Arkibo follows proven interaction design principles to deliver an intuitive experience for tertiary students:
 
 1. **Fitts’s Law & Large Hit Targets:** Interactive elements (buttons, filter chips, checkboxes, table rows) feature minimum hit areas of `44px x 44px` on mobile and `36px` on desktop, with tactile press feedback (`active:scale-[0.98]`).
 2. **Hick’s Law & Cognitive Load Reduction:** Bureaucratic jargon has been stripped out. The student is presented with clear choices (Renewal vs New Applicant) and single-action hierarchies on each screen.

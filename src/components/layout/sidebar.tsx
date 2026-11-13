@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Megaphone, SquareCheck, File, ChartNoAxesColumnIncreasing, GraduationCap, House, Landmark, LogOut, MessageCircle, X } from "lucide-react";
+import { Megaphone, SquareCheck, File, ChartNoAxesColumnIncreasing, House, Landmark, LogOut, MessageCircle, X } from "lucide-react";
 import { toast } from "sonner";
 import { accountRequest } from "@/lib/account";
 import { cn } from "@/lib/utils";
@@ -53,8 +53,8 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () =>
       >
         <div className="flex h-[4.5rem] items-center justify-between gap-2 border-b border-slate-border px-4 dark:border-dark-border">
           <Link href={user?.profile ? "/dashboard" : "/"} onClick={onClose} className="flex min-h-11 items-center gap-2 text-lg font-semibold">
-            <GraduationCap aria-hidden="true" className="text-primary" size={22} />
-            ScholarReady
+            <Image src="/arkibo-logo.svg" alt="" width={36} height={36} className="shrink-0 dark:brightness-0 dark:invert" />
+            Arkibo
           </Link>
           <div className="flex shrink-0 items-center gap-1">
             <ThemeToggle className="shrink-0 shadow-none" />

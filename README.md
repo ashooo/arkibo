@@ -1,6 +1,6 @@
-# ScholarReady
+# Arkibo
 
-ScholarReady helps Pasig City college students prepare scholarship applications and renewals: track requirements, manage scanned documents, search OCR text, and review academic grades.
+Arkibo helps learners at every education level prepare scholarship applications and renewals: track requirements, manage scanned documents, search OCR text, and review academic grades.
 
 ## Status
 

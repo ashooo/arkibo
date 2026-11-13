@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  if (!isLocal(request)) return failure("Open ScholarReady on localhost to use local accounts.", 403);
+  if (!isLocal(request)) return failure("Open Arkibo on localhost to use local accounts.", 403);
   if (!request.headers.get("content-type")?.startsWith("application/json")) {
     return failure("Expected JSON.", 415);
   }
@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
       const educationLevel = body.educationLevel ?? user.profile?.educationLevel ?? "College";
       const school = typeof body.school === "string" ? body.school.trim() : user.profile?.school ?? schoolName;
       if (!isEducationLevel(educationLevel) || !school || school.length > 150) {
-        return failure("Enter your school and select an education level.", 400);
+        return failure("Enter your school or organization and select an education level.", 400);
       }
       if (!firstName || !lastName || [firstName, middleName, lastName].some((part) => part.length > 100)
         || !educationYears[educationLevel].includes(body.yearLevel)) {
@@ -119,6 +119,28 @@ export async function POST(request: NextRequest) {
       || password.length > 128 || password.length < (signup ? 8 : 1)) {
       return failure(signup ? "Enter a valid email and a password of 8–128 characters." : "Check your email and password.", 400);
     }
+    let signupProfile: Record<string, unknown> | undefined;
+    if (signup) {
+      const firstName = typeof body.firstName === "string" ? body.firstName.trim() : "";
+      const middleName = typeof body.middleName === "string" ? body.middleName.trim() : "";
+      const lastName = typeof body.lastName === "string" ? body.lastName.trim() : "";
+      const school = typeof body.school === "string" ? body.school.trim() : "";
+      const educationLevel = body.educationLevel;
+      const track = body.track;
+      if (!isEducationLevel(educationLevel) || !school || school.length > 150
+        || !firstName || !lastName || [firstName, middleName, lastName].some((part) => part.length > 100)
+        || !educationYears[educationLevel].includes(body.yearLevel) || (track !== "new" && track !== "renewal")) {
+        return failure("Complete your profile with a name, school or organization, education level, grade or year, and application track.", 400);
+      }
+      if (body.photo !== undefined && body.photo !== null && !isProfilePhoto(body.photo)) {
+        return failure("Choose a JPG or PNG photo up to 512 KB.", 400);
+      }
+      signupProfile = {
+        name: [firstName, middleName, lastName].filter(Boolean).join(" "), firstName, middleName, lastName,
+        school, educationLevel, yearLevel: body.yearLevel, track,
+        topics: Array.isArray(body.topics) ? alertTopics.filter((topic) => body.topics.includes(topic)) : [], photo: body.photo ?? null,
+      };
+    }
 
     const newToken = randomBytes(32).toString("hex");
     const client = await db.connect();
@@ -129,8 +151,8 @@ export async function POST(request: NextRequest) {
         const salt = randomBytes(16).toString("hex");
         const key = (await deriveKey(password, salt, 64)) as Buffer;
         const result = await client.query(
-          "INSERT INTO accounts (id, email, password_hash) VALUES ($1, $2, $3) ON CONFLICT (email) DO NOTHING RETURNING id, profile",
-          [randomUUID(), email, `${salt}:${key.toString("hex")}`],
+          "INSERT INTO accounts (id, email, password_hash, profile) VALUES ($1, $2, $3, $4) ON CONFLICT (email) DO NOTHING RETURNING id, profile",
+          [randomUUID(), email, `${salt}:${key.toString("hex")}`, signupProfile],
         );
         user = result.rows[0];
         if (!user) {
