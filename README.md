@@ -1,27 +1,26 @@
-# ScholarReady
+# Arkibo
 
-ScholarReady helps Pasig City college students prepare scholarship applications and renewals: track requirements, manage scanned documents, search OCR text, and review academic grades.
+**Less paperwork. A clearer path to education.**
 
-## Status
+## The problem
 
-This repository contains the shared initial structure. Feature modules, database schema, migrations, and Lumen OCR endpoint details remain to be implemented and verified.
+Scholarship applicants often keep enrollment certificates, report cards, IDs, and other requirements across paper folders, phone galleries, and scattered files. Finding the right document and tracking missing requirements becomes repetitive and stressful, especially during applications and renewals.
 
-## Local setup
+## Our solution
 
-1. Install dependencies with `npm install`.
-2. Copy `.env.example` to `.env.local` and fill in local values.
-3. Start a local PostgreSQL instance (the included `compose.yaml` is optional).
-4. Apply only reviewed, committed migrations once they exist.
-5. Run `npm run dev`.
+Arkibo brings scholarship preparation into one workspace for learners across education levels. Users can upload and organize documents, search their contents, track application checklists, review academic grades, and browse announcements. An AI chatbot helps users find relevant documents and understand what their checklist still needs.
 
-The app does not initialize, migrate, seed, or reset the database automatically. Keep `.env.local`, `data/uploads/`, database dumps, and real student files out of version control.
+## How we use Lumen
 
-## Repository layout
+Arkibo sends uploaded PDFs and images to **Lumen OCR**, checks their processing status, and retrieves extracted text. This turns scanned paperwork into searchable content. A separate local **Qwen model through Ollama** uses that text to suggest document categories, tags, and checklist matches, and answer document-related questions. Users review suggestions; Arkibo does not approve scholarship eligibility.
 
-- `src/app/` — App Router pages and thin route wrappers
-- `src/features/` — feature-owned UI and logic
-- `src/components/` — shared UI and layout components
-- `src/db/` — Drizzle schema, client, and migrations
-- `src/lib/server/` — server-only Lumen and file-storage code
-- `src/types/` — shared domain contracts
-- `src/data/` — versioned demo fixtures
+## Run locally
+
+Requires Node.js 22.15+, npm, an existing PostgreSQL database with the project schema, Lumen API credentials, and Ollama for AI features.
+
+1. Run `npm install`.
+2. Copy `.env.example` to `.env.local`. Set `DATABASE_URL`, the `LUMEN_*` values, `OLLAMA_BASE_URL`, and `QWEN_MODEL`.
+3. Start Ollama and install the configured model: `ollama pull qwen3.5:2b`.
+4. Run `npm run dev` and open [localhost:3000](http://localhost:3000).
+
+Use the existing database as-is. Startup does not migrate, reset, or seed it; any required database changes need explicit approval. Keep credentials and uploaded personal documents out of version control.
