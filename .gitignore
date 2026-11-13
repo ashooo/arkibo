@@ -26,5 +26,9 @@ yarn-debug.log*
 pnpm-debug.log*
 dev-server*.log
 server.log
+arkibo-server*.log
+arkibo-upload-success.png
+artifacts/arkibo-screens/
+artifacts/arkibo-screens.zip
 .DS_Store
 
