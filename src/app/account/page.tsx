@@ -52,9 +52,9 @@ export default function AccountPage() {
     const middleName = String(data.get("middleName")).trim();
     const lastName = String(data.get("lastName")).trim();
     const yearLevel = String(data.get("year"));
-    const track = data.get("track");
-    if (!firstName || !lastName || !yearLevels.includes(yearLevel) || (track !== "new" && track !== "renewal")) {
-      setFeedback({ text: "Enter your first and last names and select your year level and application track.", error: true });
+    const track = profile?.track ?? "new";
+    if (!firstName || !lastName || !yearLevels.includes(yearLevel)) {
+      setFeedback({ text: "Enter your first and last names and select your year level.", error: true });
       return;
     }
     setBusy(true);
@@ -166,13 +166,6 @@ export default function AccountPage() {
                 <select className={select} name="year" required defaultValue={profile?.yearLevel ?? ""}>
                   <option value="" disabled>Select your year level</option>
                   {yearLevels.map((year) => <option key={year}>{year}</option>)}
-                </select>
-              </label>
-              <label className={field}>Application track
-                <select className={select} name="track" defaultValue={profile?.track ?? ""} required>
-                  <option value="" disabled>Select your application track</option>
-                  <option value="new">New Applicant</option>
-                  <option value="renewal">Renewal Scholar</option>
                 </select>
               </label>
               <fieldset className="col-span-full flex flex-wrap gap-x-6 gap-y-2">

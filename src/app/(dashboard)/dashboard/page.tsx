@@ -7,32 +7,29 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 
 export default function DashboardPage() {
-  const { applicationType } = useStudent();
-  return <AccountWorkspace><DashboardWorkspace key={applicationType} /></AccountWorkspace>;
+  const { user } = useStudent();
+  return <AccountWorkspace><DashboardWorkspace key={user?.id} /></AccountWorkspace>;
 }
 
 type Summary = { checklist: { total: number; prepared: number; deadline: string }; documents: { total: number; complete: number; pending: number; failed: number }; grades: { total: number; verified: number } };
 function DashboardWorkspace() {
-  const { applicationType } = useStudent();
   const [summary, setSummary] = useState<Summary | null>(null);
   const [error, setError] = useState("");
   useEffect(() => {
     let active = true;
-    void fetch(`/api/workspace/summary?type=${applicationType}`, { cache: "no-store" }).then(async (response) => {
+    void fetch("/api/workspace/summary", { cache: "no-store" }).then(async (response) => {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? "Unable to load progress.");
       if (active) setSummary(data);
     }).catch((reason: Error) => { if (active) setError(reason.message); });
     return () => { active = false; };
-  }, [applicationType]);
+  }, []);
 
   return <section className="flex flex-col gap-6">
     <header className="workspace-banner">
       <div className="space-y-2">
         <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">Home</h1>
-        <p className="text-sm text-on-surface-variant dark:text-slate-400">
-          {applicationType === "renewal" ? "Renewal Scholar" : "New Applicant"}
-        </p>
+        <p className="text-sm text-on-surface-variant dark:text-slate-400">Your applications and scholarship progress</p>
       </div>
     </header>
     {summary ? <div className="grid gap-4 sm:grid-cols-3">

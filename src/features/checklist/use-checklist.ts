@@ -2,37 +2,41 @@
 
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import type { ApplicationType, ChecklistStatus } from "@/types/shared";
+import type { ChecklistStatus } from "@/types/shared";
 import type { RequirementTemplate } from "@/data/requirements";
 
 export type ItemState = { status: ChecklistStatus; notes: string; documentIds: string[] };
-type View = { items: Record<string, ItemState>; customTemplates: RequirementTemplate[]; deadline: string };
+export type ChecklistFolder = { id: string; name: string; deadline: string; total: number; prepared: number; documents: number };
+type View = { items: Record<string, ItemState>; customTemplates: RequirementTemplate[]; deadline: string; listId: string; lists: ChecklistFolder[] };
 
-export function useChecklist(applicationType: ApplicationType) {
+export function useChecklist() {
   const [items, setItems] = useState<View["items"]>({});
   const [customTemplates, setCustomTemplates] = useState<RequirementTemplate[]>([]);
   const [deadline, setDeadline] = useState("");
+  const [listId, setListId] = useState("");
+  const [lists, setLists] = useState<ChecklistFolder[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [pending, setPending] = useState(0);
   const [error, setError] = useState("");
   const queue = useRef<Promise<unknown>>(Promise.resolve());
   const active = useRef(true);
+  const apply = (data: View) => { setItems(data.items); setCustomTemplates(data.customTemplates); setDeadline(data.deadline); setListId(data.listId); setLists(data.lists); };
   useEffect(() => {
     active.current = true;
-    void fetch(`/api/checklist?type=${applicationType}`, { cache: "no-store" }).then(async (response) => {
+    void fetch("/api/checklist", { cache: "no-store" }).then(async (response) => {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? "Unable to load checklist.");
-      if (active.current) { setItems(data.items); setCustomTemplates(data.customTemplates); setDeadline(data.deadline); setLoaded(true); }
+      if (active.current) { apply(data); setLoaded(true); }
     }).catch((reason: Error) => { if (active.current) setError(reason.message); });
     return () => { active.current = false; };
-  }, [applicationType]);
+  }, []);
 
-  function mutate(path: string, method: string, body: object, onSuccess?: (data: View & { requirement: RequirementTemplate }) => void): Promise<boolean> {
+  function mutate(path: string, method: string, body: object, onSuccess?: (data: any) => void): Promise<boolean> {
     setPending((count) => count + 1);
     const operation = queue.current.then(async () => {
       // Never let queued edits run under a different account after logout/navigation.
       if (!active.current) return false;
-      const response = await fetch(path, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...body, applicationType }) });
+      const response = await fetch(path, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ listId, ...body }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? "Unable to save changes.");
       if (active.current) onSuccess?.(data);
@@ -55,10 +59,39 @@ export function useChecklist(applicationType: ApplicationType) {
   }
   function saveDeadline(value: string) {
     setDeadline(value);
+    setLists((current) => current.map((list) => list.id === listId ? { ...list, deadline: value } : list));
     return mutate("/api/checklist", "PATCH", { deadline: value });
   }
   function addRequirement(title: string, description: string) {
     return mutate("/api/checklist", "POST", { title, description }, (data) => setCustomTemplates((current) => [...current, data.requirement]));
   }
-  return { items, customTemplates, deadline, loaded, pending, error, updateItem, saveDeadline, addRequirement };
+  function editRequirement(id: string, title: string, description: string) {
+    return mutate(`/api/checklist/${encodeURIComponent(id)}`, "PATCH", { title, description }, (data) => {
+      setCustomTemplates((current) => current.map((template) => template.id === id ? { ...template, title: data.requirement.title, description: data.requirement.description } : template));
+    });
+  }
+  function deleteRequirement(id: string) {
+    return mutate(`/api/checklist/${encodeURIComponent(id)}`, "DELETE", {}, () => {
+      setCustomTemplates((current) => current.filter((template) => template.id !== id));
+      setItems((current) => { const next = { ...current }; delete next[id]; return next; });
+    });
+  }
+  async function load(nextListId?: string) {
+    setLoaded(false);
+    try {
+      // Wait for queued saves so the reloaded view includes them.
+      await queue.current;
+      const response = await fetch(nextListId ? `/api/checklist?listId=${encodeURIComponent(nextListId)}` : "/api/checklist", { cache: "no-store" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? "Unable to load checklist.");
+      if (active.current) { apply(data); setError(""); }
+    } catch (reason) { if (active.current) setError(reason instanceof Error ? reason.message : "Unable to load checklist."); }
+    finally { if (active.current) setLoaded(true); }
+  }
+  const switchChecklist = (nextListId: string) => load(nextListId);
+  const refreshFolders = () => load(listId || undefined);
+  function createChecklist(name: string) {
+    return mutate("/api/checklist", "POST", { name }, (data) => apply(data));
+  }
+  return { items, customTemplates, deadline, loaded, pending, error, listId, lists, updateItem, saveDeadline, addRequirement, editRequirement, deleteRequirement, switchChecklist, refreshFolders, createChecklist };
 }

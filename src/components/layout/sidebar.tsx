@@ -14,7 +14,7 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 const navigation = [
   { href: "/dashboard", label: "Home", Icon: House },
   { href: "/notifications", label: "Announcements", Icon: Bell },
-  { href: "/checklist", label: "Checklist", Icon: ClipboardList },
+  { href: "/checklist", label: "Application Checklists", Icon: ClipboardList },
   { href: "/documents", label: "My Documents", Icon: FolderArchive },
   { href: "/grades", label: "Grades", Icon: GraduationCap },
 ];

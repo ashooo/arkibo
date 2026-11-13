@@ -85,7 +85,7 @@ export function GradeHistory() {
 
   return <section className="card stack"><div><h1>Grade History</h1><p className="muted">OCR can help you read an OGR, but you must review every row before marking it verified.</p></div>
     {message && <p className="notice" aria-live="polite">{message}</p>}
-    <p className="muted">{profiles[0]?.displayName} · {profiles[0]?.applicationType}</p>
+    <p className="muted">{profiles[0]?.displayName}</p>
     {studentId && <><form className="inline-form" onSubmit={createTerm}><input name="academicYear" placeholder="Academic year (e.g. 2026-2027)" required /><input name="semester" placeholder="Semester (e.g. First Semester)" required /><button>Create term</button></form>
     <label className="field"><span>Academic term</span><select value={termId} onChange={(event) => { setTermId(event.target.value); setGrades([]); }}><option value="">Select a term</option>{terms.map((term) => <option key={term.id} value={term.id}>{term.academicYear} · {term.semester}</option>)}</select></label></>}
     {termId && <><label className="field"><span>Optional OGR source</span><select value={sourceDocumentId} onChange={(event) => setSourceDocumentId(event.target.value)}><option value="">Manual entry — no source document</option>{sourceDocuments.map((document) => <option key={document.id} value={document.id}>{document.originalName}</option>)}</select></label>
