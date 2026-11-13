@@ -154,11 +154,11 @@ function ChecklistWorkspace() {
   if (!loaded) return <p role="status">{error || "Loading your saved checklist…"}</p>;
 
   return <div className="flex flex-col gap-6">
-    <p role="status" className="text-sm text-slate-500">{error || (!loaded ? "Loading checklist…" : pending ? "Saving changes…" : "Checklist saved to your account.")}</p>
-    <header className="workspace-banner">
+    {(Boolean(error) || !loaded || pending > 0) && <p role="status" className="text-sm text-on-surface-variant dark:text-dark-muted">{error || (!loaded ? "Loading checklist…" : "Saving changes…")}</p>}
+    <header className="flex flex-wrap items-start justify-between gap-4 py-2">
       <div>
         <div className="mb-1 flex flex-wrap items-center gap-2">
-          <h1 className="text-2xl font-extrabold tracking-tight text-on-surface dark:text-slate-100 sm:text-3xl">Scholarship Checklist</h1>
+          <h1 className="text-2xl font-extrabold tracking-tight text-on-surface dark:text-slate-100 sm:text-4xl">Scholarship Checklist</h1>
           <Badge variant="primary" size="sm">{isRenewal ? "Renewal Track" : "New Applicant Track"}</Badge>
         </div>
         <p className="text-sm leading-relaxed text-on-surface-variant dark:text-slate-400">Track your requirements, attach saved documents, and mark each step as you complete it.</p>
@@ -250,7 +250,7 @@ function ChecklistWorkspace() {
         const Icon = requirementIcons[template.sortOrder - 1] ?? FileText;
         const notesOpen = openNotes.has(template.id) || item.notes.length > 0;
         return <li key={template.id}>
-          <Card ref={(element) => { cardRefs.current[template.id] = element; }} tabIndex={-1} className="relative scroll-mt-24 overflow-hidden p-4 transition-shadow hover:shadow-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:p-5">
+          <Card ref={(element) => { cardRefs.current[template.id] = element; }} tabIndex={-1} className="relative scroll-mt-24 overflow-hidden rounded-2xl p-4 transition-shadow hover:shadow-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:p-5">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="flex min-w-0 gap-3">
                 <button type="button" role="checkbox" aria-checked={isPrepared} aria-label={`Mark ${template.title} as ${isPrepared ? "not prepared" : "prepared"}`} onClick={() => setStatus(template.id, isPrepared ? "missing" : "prepared")} className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${isPrepared ? "border-emerald-500 bg-emerald-500 text-white" : "border-slate-300 text-transparent hover:border-emerald-500 hover:text-emerald-500 dark:border-slate-600"} ${focusRing}`}><Check className="h-4 w-4" strokeWidth={3} /></button>

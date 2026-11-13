@@ -2,7 +2,7 @@ import { createHash, randomBytes, randomUUID, scrypt, timingSafeEqual } from "no
 import { promisify } from "node:util";
 import { NextRequest, NextResponse } from "next/server";
 import { accountDb } from "@/lib/server/account-db.mjs";
-import { alertTopics, maxProfilePhotoBytes, yearLevels } from "@/lib/account";
+import { alertTopics, educationYears, isEducationLevel, maxProfilePhotoBytes, schoolName } from "@/lib/account";
 
 const deriveKey = promisify(scrypt);
 const sessionCookie = "scholarready_session";
@@ -91,8 +91,13 @@ export async function POST(request: NextRequest) {
       const firstName = typeof body.firstName === "string" ? body.firstName.trim() : "";
       const middleName = typeof body.middleName === "string" ? body.middleName.trim() : "";
       const lastName = typeof body.lastName === "string" ? body.lastName.trim() : "";
+      const educationLevel = body.educationLevel ?? user.profile?.educationLevel ?? "College";
+      const school = typeof body.school === "string" ? body.school.trim() : user.profile?.school ?? schoolName;
+      if (!isEducationLevel(educationLevel) || !school || school.length > 150) {
+        return failure("Enter your school and select an education level.", 400);
+      }
       if (!firstName || !lastName || [firstName, middleName, lastName].some((part) => part.length > 100)
-        || !yearLevels.includes(body.yearLevel)) {
+        || !educationYears[educationLevel].includes(body.yearLevel)) {
         return failure("Enter valid first and last names and select your year level.", 400);
       }
       const name = [firstName, middleName, lastName].filter(Boolean).join(" ");
@@ -101,7 +106,7 @@ export async function POST(request: NextRequest) {
         return failure("Choose a JPG or PNG photo up to 512 KB.", 400);
       }
       const photo = body.photo === undefined ? user.profile?.photo : body.photo;
-      const profile = { name, firstName, middleName, lastName, yearLevel: body.yearLevel, track, topics, photo };
+      const profile = { name, firstName, middleName, lastName, school, educationLevel, yearLevel: body.yearLevel, track, topics, photo };
       await db.query("UPDATE accounts SET profile = $2 WHERE id = $1", [user.id, profile]);
       return json({ id: user.id, profile });
     }

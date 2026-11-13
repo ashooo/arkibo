@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Bell, ClipboardList, FolderArchive, GraduationCap, House, Landmark, LogOut, X } from "lucide-react";
+import { Megaphone, SquareCheck, File, ChartNoAxesColumnIncreasing, GraduationCap, House, Landmark, LogOut, X } from "lucide-react";
 import { toast } from "sonner";
 import { accountRequest } from "@/lib/account";
 import { cn } from "@/lib/utils";
@@ -13,10 +13,10 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 const navigation = [
   { href: "/dashboard", label: "Home", Icon: House },
-  { href: "/notifications", label: "Announcements", Icon: Bell },
-  { href: "/checklist", label: "Checklist", Icon: ClipboardList },
-  { href: "/documents", label: "My Documents", Icon: FolderArchive },
-  { href: "/grades", label: "Grades", Icon: GraduationCap },
+  { href: "/notifications", label: "Announcements", Icon: Megaphone },
+  { href: "/checklist", label: "Checklist", Icon: SquareCheck },
+  { href: "/documents", label: "My Documents", Icon: File },
+  { href: "/grades", label: "Grades", Icon: ChartNoAxesColumnIncreasing },
 ];
 
 export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => void }) {
@@ -45,7 +45,7 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () =>
       <aside
         id="portal-navigation"
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 flex-col overflow-y-auto border-r border-slate-border bg-surface-lowest dark:border-dark-border dark:bg-dark-surface lg:visible lg:static lg:translate-x-0",
+          "fixed inset-y-0 left-0 z-50 flex w-64 xl:w-72 shrink-0 flex-col overflow-y-auto border-r border-slate-border bg-surface-lowest dark:border-dark-border dark:bg-dark-surface lg:visible lg:static lg:translate-x-0",
           isOpen ? "visible translate-x-0" : "invisible -translate-x-full",
         )}
         onKeyDown={(event) => { if (event.key === "Escape") onClose?.(); }}
@@ -62,10 +62,10 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () =>
             </button>
           </div>
         </div>
-        <nav aria-label="Portal navigation" className="space-y-1 py-3 pr-3">
+        <nav aria-label="Portal navigation" className="space-y-2 px-3 py-6">
           {links.map(({ href, label, Icon }) => (
             <Link key={href} href={href} onClick={onClose} aria-current={pathname === href ? "page" : undefined} className={cn(
-              "flex min-h-12 items-center gap-4 rounded-r-full px-5 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary",
+              "flex min-h-12 items-center gap-4 rounded-xl px-5 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary",
               pathname === href ? "bg-primary-soft text-primary-dark dark:bg-dark-accentSurface dark:text-dark-accent" : "hover:bg-surface-low dark:hover:bg-dark-card",
             )}>
               <Icon aria-hidden="true" size={20} />
@@ -73,7 +73,7 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () =>
             </Link>
           ))}
         </nav>
-        <div className="mt-auto mx-3 mb-3 space-y-3 rounded-2xl border border-slate-border bg-surface p-3 dark:border-dark-border dark:bg-dark-bg">
+        <div className="mt-auto mx-4 mb-4 space-y-3 border-t border-slate-border pt-4 dark:border-dark-border">
           {user ? (
             <Link href="/account" onClick={onClose} className="flex min-h-16 items-center gap-3 rounded-xl bg-surface-lowest p-2.5 hover:bg-surface-low dark:bg-dark-card dark:hover:bg-dark-cardAlt">
               {user.profile?.photo ? (
@@ -99,7 +99,7 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () =>
             </p>
           )}
           {user && (
-            <button type="button" disabled={signingOut} onClick={signOut} className="flex min-h-11 w-full items-center gap-3 rounded-lg border border-slate-border px-3 text-sm font-semibold hover:bg-surface-low disabled:opacity-50 dark:border-dark-border dark:hover:bg-dark-card">
+            <button type="button" disabled={signingOut} onClick={signOut} className="flex min-h-11 w-full items-center justify-center gap-3 rounded-xl border border-slate-border px-3 text-sm font-semibold hover:bg-surface-low disabled:opacity-50 dark:border-dark-border dark:hover:bg-dark-card">
               <LogOut aria-hidden="true" size={18} /> Log out
             </button>
           )}

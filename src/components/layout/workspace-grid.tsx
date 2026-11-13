@@ -1,29 +1,27 @@
 import Link from "next/link";
-import { ArrowUpRight, Bell, ClipboardList, FolderArchive, GraduationCap } from "lucide-react";
+import { ArrowRight, Megaphone, SquareCheck, File, ChartNoAxesColumnIncreasing } from "lucide-react";
 
 const workspaces = [
-  ["Checklist", "/checklist", "Review your scholarship requirements.", ClipboardList, "blue"],
-  ["My Documents", "/documents", "Add documents, extract text, and find your saved files.", FolderArchive, "purple"],
-  ["Grades", "/grades", "Open your academic records workspace.", GraduationCap, "gold"],
-  ["Announcements", "/notifications", "Browse scholarship, allowance, and SPES notices.", Bell, "blue"],
+  ["Checklist", "/checklist", "Review your scholarship requirements.", SquareCheck, "green"],
+  ["My Documents", "/documents", "Add documents, extract text, and find your saved files.", File, "purple"],
+  ["Grades", "/grades", "Open your academic records workspace.", ChartNoAxesColumnIncreasing, "gold"],
+  ["Announcements", "/notifications", "Browse scholarship, allowance, and SPES notices.", Megaphone, "blue"],
 ] as const;
 
 export function WorkspaceGrid() {
   return (
     <section aria-labelledby="workspaces-heading" className="space-y-4">
-      <h2 id="workspaces-heading" className="text-xl font-semibold">Your workspaces</h2>
-      <ul className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+      <h2 id="workspaces-heading" className="text-2xl font-semibold">Your workspaces</h2>
+      <ul className="grid gap-5 sm:grid-cols-2">
         {workspaces.map(([title, href, description, Icon, tone]) => (
           <li key={href}>
-            <Link href={href} className="workspace-card">
-              <div className="workspace-cover" data-tone={tone}>
-                <h3 className="text-xl font-semibold">{title}</h3>
-                <Icon aria-hidden="true" size={32} className="shrink-0" />
+            <Link href={href} className="feature-tile" data-tone={tone}>
+              <span className="feature-icon"><Icon aria-hidden="true" size={28} /></span>
+              <div className="min-w-0">
+                <h3 className="text-lg font-semibold">{title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-on-surface-variant dark:text-slate-300">{description}</p>
               </div>
-              <div className="flex flex-1 items-start justify-between gap-3 p-4 text-sm text-on-surface-variant dark:text-slate-300">
-                <p>{description}</p>
-                <ArrowUpRight aria-hidden="true" size={17} className="shrink-0 text-primary dark:text-dark-accent" />
-              </div>
+              <span className="feature-arrow"><ArrowRight aria-hidden="true" size={20} /></span>
             </Link>
           </li>
         ))}

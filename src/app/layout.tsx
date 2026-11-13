@@ -18,7 +18,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="text-on-surface dark:text-slate-100 antialiased min-h-screen">
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} storageKey="scholarready-theme">
           <StudentProvider>
             {children}
             <Toaster position="bottom-right" richColors closeButton theme="system" />
