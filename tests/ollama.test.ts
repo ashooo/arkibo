@@ -23,6 +23,7 @@ test("local inference failures remain honest and do not leak provider output", a
     globalThis.fetch = async () => new Response("private provider diagnostics", { status: 503 });
     await assert.rejects(qwenChat([]), /could not process/);
     for (const output of [
+      null,
       { message: { content: "partial" }, done_reason: "length" },
       { message: { content: "", tool_calls: [{ function: { name: "get_document", arguments: "invalid" } }] } },
     ]) {
