@@ -11,6 +11,7 @@ import { AddDocument } from "./add-document";
 import { categories, DocumentDialog, inputStyle } from "./document-ui";
 import { DocumentCard } from "./document-card";
 import { ClassificationReview } from "./classification-review";
+import { UploadSuccess } from "./upload-success";
 
 type SearchResult = StoredDocument;
 export function DocumentLibrary({ initialAddOpen = false, initialReviewId }: { initialAddOpen?: boolean; initialReviewId?: string }) {
@@ -21,6 +22,7 @@ export function DocumentLibrary({ initialAddOpen = false, initialReviewId }: { i
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [uploaded, setUploaded] = useState<{ name: string; warning?: string } | null>(null);
   const [revision, setRevision] = useState(0);
   const [addOpen, setAddOpen] = useState(initialAddOpen);
   const [reviewId, setReviewId] = useState<string | null>(initialReviewId ?? null);
@@ -116,6 +118,7 @@ export function DocumentLibrary({ initialAddOpen = false, initialReviewId }: { i
   }
   function closeAdd() { setAddOpen(false); if (initialAddOpen) router.replace("/documents", { scroll: false }); }
   const visible = documents.filter((entry) => !category || entry.category === category);
+  if (uploaded) return <UploadSuccess name={uploaded.name} warning={uploaded.warning} onLibrary={() => setUploaded(null)} onUpload={() => { setUploaded(null); setAddOpen(true); }} />;
   return <section className="space-y-6 pb-8">
     <header className="workspace-banner"><div><p className="mb-1 text-xs font-semibold uppercase tracking-widest text-primary dark:text-dark-accent">Scholarship workspace</p><h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">My Documents</h1><p className="mt-2 max-w-xl text-sm leading-relaxed text-on-surface-variant dark:text-slate-400">Your originals, organized and easy to find. Add a document to extract its text for search, requirements, and grade review.</p></div><Button onClick={() => setAddOpen(true)} className="min-h-11 shrink-0"><Plus size={18} />Add document</Button></header>
     <div className="rounded-2xl border border-slate-border bg-white dark:border-dark-border dark:bg-dark-card">
@@ -127,7 +130,7 @@ export function DocumentLibrary({ initialAddOpen = false, initialReviewId }: { i
       </div>
       {!loading && visible.length > 0 && <p className="border-t border-slate-border px-5 py-3 text-xs text-slate-500 dark:border-dark-border">Showing {visible.length} {visible.length === 1 ? "document" : "documents"}{documents.length === 50 ? " from your 50 most recent matches" : ""}. Originals remain available while text is processing.</p>}
     </div>
-    {addOpen && <AddDocument onClose={closeAdd} onAdded={(record, warning) => { upsert(record); setQuery(""); setCategory(""); setNotice(warning ?? "Document added. Text extraction is processing in the background."); closeAdd(); setRevision((value) => value + 1); }} />}
+    {addOpen && <AddDocument onClose={closeAdd} onAdded={(record, warning) => { upsert(record); setQuery(""); setCategory(""); setNotice(warning ?? "Document added. Text extraction is processing in the background."); closeAdd(); setUploaded({ name: record.originalName, warning }); setRevision((value) => value + 1); }} />}
     {reviewId && <ClassificationReview documentId={reviewId} onUpdated={upsert} onClose={() => { setReviewId(null); if (initialReviewId) router.replace("/documents", { scroll: false }); }} />}
     {deleting && <DocumentDialog title="Remove this document?" onClose={() => setDeleting(null)} busy={!!busyId}><div className="space-y-5 p-6"><p className="break-words text-sm"><strong>{deleting.originalName}</strong> will be removed from your library and detached from checklist items. This cannot be undone.</p><p className="text-xs text-slate-500">This removes the local file. Any copy already sent to Lumen is subject to its retention policy.</p><div className="flex justify-end gap-3"><Button variant="secondary" disabled={!!busyId} onClick={() => setDeleting(null)}>Keep document</Button><Button variant="danger" isLoading={!!busyId} onClick={() => void remove()}>Remove document</Button></div></div></DocumentDialog>}
   </section>;
