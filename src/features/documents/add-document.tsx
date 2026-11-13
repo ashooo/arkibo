@@ -5,12 +5,11 @@ import { FileText, UploadCloud, ShieldCheck, ArrowRight, X } from "lucide-react"
 import { Button } from "@/components/ui/button";
 import type { StoredDocument } from "@/types/shared";
 import { uploadError, DOCUMENT_MIME_TYPES } from "@/lib/document-upload";
-import { categories, DocumentDialog, inputStyle } from "./document-ui";
+import { DocumentDialog } from "./document-ui";
 
 export function AddDocument({ onClose, onAdded }: { onClose: () => void; onAdded: (document: StoredDocument, warning?: string) => void }) {
   const input = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
-  const [category, setCategory] = useState("enrollment_proof");
   const [consent, setConsent] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -29,7 +28,7 @@ export function AddDocument({ onClose, onAdded }: { onClose: () => void; onAdded
     if (issue) { setError(issue); return; }
     setBusy(true); setError("");
     try {
-      const data = new FormData(); data.set("file", file); data.set("category", category);
+      const data = new FormData(); data.set("file", file);
       const response = await fetch("/api/documents", { method: "POST", body: data, signal: AbortSignal.timeout(45000) });
       const payload = await response.json().catch(() => ({}));
       if (payload.document) { onAdded(payload.document, response.ok ? undefined : "Your file was saved, but text extraction could not start. Open it for details."); return; }
@@ -41,7 +40,7 @@ export function AddDocument({ onClose, onAdded }: { onClose: () => void; onAdded
     <form onSubmit={submit} className="space-y-5 p-5 sm:p-6">
       <input ref={input} id="document-file" type="file" className="sr-only" tabIndex={-1} accept={DOCUMENT_MIME_TYPES.join(",")} disabled={busy} onChange={(event) => choose(event.target.files?.[0])} />
       {file ? <div className="flex items-center gap-3 rounded-xl border border-slate-border bg-surface-low p-4 dark:border-dark-border dark:bg-dark-cardAlt"><span className="grid size-11 shrink-0 place-items-center rounded-lg bg-white text-primary dark:bg-dark-card dark:text-dark-accent"><FileText size={23} /></span><div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold" title={file.name}>{file.name}</p><p className="mt-1 text-xs text-slate-500">{(file.size / 1024 / 1024).toFixed(2)} MiB · Ready to upload</p></div><button type="button" disabled={busy} aria-label="Remove selected file" onClick={() => { setFile(null); if (input.current) input.current.value = ""; }} className="grid size-10 place-items-center rounded-lg hover:bg-surface-high disabled:opacity-40 dark:hover:bg-dark-card"><X size={18} /></button></div> : <button type="button" disabled={busy} onClick={() => input.current?.click()} onDragOver={(event) => { event.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={drop} className={`flex min-h-48 w-full flex-col items-center justify-center rounded-xl border-2 border-dashed p-6 text-center transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${dragging ? "border-primary bg-primary-soft dark:bg-dark-accentSurface" : "border-slate-300 bg-surface hover:border-primary dark:border-dark-border dark:bg-dark-cardAlt"}`}><span className="mb-3 grid size-12 place-items-center rounded-full bg-primary-soft text-primary dark:bg-dark-accentSurface dark:text-dark-accent"><UploadCloud size={24} /></span><span className="text-sm font-semibold">Choose a file or drop it here</span><span className="mt-2 text-xs text-slate-500 dark:text-slate-400">PDF, PNG, JPG, TIFF, or WebP · Up to 10 MiB</span></button>}
-      <label className="block space-y-2 text-sm font-semibold" htmlFor="document-category"><span>Document category</span><select id="document-category" className={inputStyle} value={category} disabled={busy} onChange={(event) => setCategory(event.target.value)}>{Object.entries(categories).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
+      <p className="text-sm leading-relaxed text-on-surface-variant dark:text-slate-400">No category needed. After text extraction, local AI will suggest the document type, tags, and possible checklist matches. You can review or change them at any time.</p>
       <div className="rounded-xl bg-surface p-4 dark:bg-dark-cardAlt"><div className="mb-2 flex items-center gap-2 text-sm font-semibold"><ShieldCheck size={17} className="text-primary dark:text-dark-accent" />Your document, your account</div><p className="text-xs leading-relaxed text-on-surface-variant dark:text-slate-400">The original stays in your library. Lumen OCR processes a copy to extract text for search. Review extracted text before using it for grades or requirements.</p></div>
       <label className="flex cursor-pointer items-start gap-3 text-sm leading-relaxed"><input type="checkbox" checked={consent} disabled={busy} onChange={(event) => setConsent(event.target.checked)} className="mt-1 size-4 shrink-0 accent-primary" /><span>I’m authorized to share this document and agree to send it to Lumen for text extraction.</span></label>
       {error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-800 dark:bg-red-950/40 dark:text-red-200">{error}</p>}

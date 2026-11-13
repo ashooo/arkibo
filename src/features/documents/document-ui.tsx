@@ -4,8 +4,9 @@ import { useEffect, useRef, type ReactNode } from "react";
 import { X, CheckCircle2, LoaderCircle, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { StoredDocument } from "@/types/shared";
+import { documentCategories } from "@/lib/ai/document-classification";
 
-export const categories = { enrollment_proof: "Enrollment proof", ogr: "Grade report", student_id: "Student ID", others: "Other" };
+export const categories = { ...documentCategories, enrollment_proof: "Enrollment proof (legacy)", ogr: "Grade report (legacy)" };
 export function categoryLabel(value: string) { return categories[value as keyof typeof categories] ?? value; }
 export const inputStyle = "min-h-11 w-full rounded-lg border border-slate-border bg-white px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 dark:border-dark-border dark:bg-dark-card dark:text-slate-100";
 
