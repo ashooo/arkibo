@@ -63,10 +63,22 @@ try {
   const [links] = await db`SELECT count(*)::int AS n FROM checklist_documents WHERE document_id=${docs[0]}`;
   assert.equal(links.n, 0);
   await api(0, `/api/checklist/${otherRequirement}/documents`, "POST", { listId: a2.listId, documentId: docs[0] });
+  const preparedRequirement = a2.customTemplates.find((r) => r.title === "Report Card").id;
+  const multipleFilesRequirement = a2.customTemplates.find((r) => r.title === "Proof of Income").id;
+  const extraDocument = randomUUID();
+  await db`INSERT INTO documents (id,student_id,original_name,mime_type,storage_path) VALUES (${extraDocument},${students[0]},'synthetic-extra.png','image/png',${`data/uploads/${extraDocument}.png`})`;
+  await api(0, `/api/checklist/${preparedRequirement}/documents`, "POST", { listId: a2.listId, documentId: docs[0] });
+  await api(0, `/api/checklist/${preparedRequirement}`, "PATCH", { listId: a2.listId, status: "prepared" });
+  await api(0, `/api/checklist/${multipleFilesRequirement}/documents`, "POST", { listId: a2.listId, documentId: docs[0] });
+  await api(0, `/api/checklist/${multipleFilesRequirement}/documents`, "POST", { listId: a2.listId, documentId: extraDocument });
   await api(0, `/api/documents/${docs[0]}`, "DELETE", undefined, 204);
   const reloaded = await api(0, `/api/checklist?listId=${a2.listId}`);
   assert.deepEqual(reloaded.items[otherRequirement].documentIds, []);
   assert.equal(reloaded.items[otherRequirement].status, "missing");
+  assert.equal(reloaded.items[preparedRequirement].status, "prepared", "Document deletion must preserve manual verification");
+  assert.deepEqual(reloaded.items[preparedRequirement].documentIds, []);
+  assert.equal(reloaded.items[multipleFilesRequirement].status, "uploaded", "A remaining file must preserve the uploaded status");
+  assert.deepEqual(reloaded.items[multipleFilesRequirement].documentIds, [extraDocument]);
   console.log(`${checks} folder integration API checks passed; read-only GETs, duplicate templates, ownership, deadlines, edits, attachments, cleanup, AI candidates and dashboard totals verified.`);
 } finally {
   await db.begin(async (tx) => { await tx`DELETE FROM students WHERE account_id IN ${tx(accounts)}`; await tx`DELETE FROM accounts WHERE id IN ${tx(accounts)}`; });
