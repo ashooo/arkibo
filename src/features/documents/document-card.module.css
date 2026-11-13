@@ -1,0 +1,8 @@
+.trigger { opacity: 1; }
+
+@media (hover: hover) and (pointer: fine) {
+  .trigger { opacity: 0; }
+  .card:hover .trigger,
+  .card:focus-within .trigger,
+  .trigger[aria-expanded="true"] { opacity: 1; }
+}
