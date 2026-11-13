@@ -1,3 +1,37 @@
-// Drizzle schema is intentionally introduced before migrations.
-// The data-layer owner should add tables and generate reviewed migrations here.
-export {};
+import type { AccountProfile } from "@/lib/account";
+import type { ClassificationSuggestion } from "@/lib/ai/document-classification";
+import { sql } from "drizzle-orm";
+import { boolean, index, integer, jsonb, pgEnum, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
+
+const id = () => uuid("id").primaryKey().$defaultFn(() => crypto.randomUUID());
+const createdAt = () => timestamp("created_at", { withTimezone: true }).notNull().defaultNow();
+
+export const announcements = pgTable("announcements", { source: text().notNull(), post_id: text().notNull(), title: text().notNull(), body: text().notNull(), categories: text().array().notNull(), original_url: text().notNull(), published_at: timestamp({ withTimezone: true }).notNull() }, (table) => [primaryKey({ columns: [table.source, table.post_id] }), index("announcements_published_idx").on(table.published_at)]);
+export const announcementSync = pgTable("announcement_sync", { source: text().primaryKey(), synced_at: timestamp({ withTimezone: true }).notNull() });
+export const accounts = pgTable("accounts", { id: text().primaryKey(), email: text().notNull().unique(), password_hash: text().notNull(), profile: jsonb().$type<AccountProfile>() });
+export const accountSessions = pgTable("account_sessions", { token_hash: text().primaryKey(), account_id: text().notNull().references(() => accounts.id, { onDelete: "cascade" }), expires_at: timestamp({ withTimezone: true }).notNull() }, (table) => [index("account_sessions_expiry_idx").on(table.expires_at)]);
+
+export const applicationTypeEnum = pgEnum("application_type", ["new", "renewal"]);
+export const ocrStatusEnum = pgEnum("ocr_status", ["pending", "complete", "failed"]);
+export const checklistStatusEnum = pgEnum("checklist_status", ["missing", "uploaded", "prepared", "needs_attention"]);
+export const students = pgTable("students", { id: id(), accountId: text("account_id").unique().references(() => accounts.id, { onDelete: "restrict" }), displayName: varchar("display_name", { length: 160 }).notNull(), applicationType: applicationTypeEnum("application_type").notNull(), createdAt: createdAt() });
+export const documents = pgTable("documents", {
+  id: id(), studentId: uuid("student_id").references(() => students.id, { onDelete: "cascade" }), originalName: varchar("original_name", { length: 256 }).notNull(), mimeType: varchar("mime_type", { length: 100 }).notNull(), storagePath: text("storage_path").notNull(), category: varchar("category", { length: 80 }).notNull().default("unclassified"), providerDocumentId: varchar("provider_document_id", { length: 128 }), ocrText: text("ocr_text"), ocrStatus: ocrStatusEnum("ocr_status").notNull().default("pending"), ocrError: text("ocr_error"), uploadedAt: timestamp("uploaded_at", { withTimezone: true }).notNull().defaultNow(),
+  tags: text("tags").array().notNull().default(sql`'{}'::text[]`),
+  classification: jsonb("classification").$type<ClassificationSuggestion>(),
+  classificationStatus: varchar("classification_status", { length: 20 }).notNull().default("pending"),
+  classificationInputHash: varchar("classification_input_hash", { length: 64 }),
+  classificationError: text("classification_error"),
+  classificationUpdatedAt: timestamp("classification_updated_at", { withTimezone: true }),
+  classificationConfirmedAt: timestamp("classification_confirmed_at", { withTimezone: true }),
+  metadataVersion: integer("metadata_version").notNull().default(0),
+  searchMetadata: text("search_metadata").notNull().default(""),
+}, (table) => [uniqueIndex("documents_provider_document_id_unique").on(table.providerDocumentId)]);
+export const checklistTracks = pgTable("checklist_tracks", { studentId: uuid("student_id").notNull().references(() => students.id, { onDelete: "cascade" }), applicationType: applicationTypeEnum("application_type").notNull(), deadline: varchar("deadline", { length: 10 }), updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow() }, (table) => [primaryKey({ columns: [table.studentId, table.applicationType] })]);
+export const checklistLists = pgTable("checklist_lists", { id: id(), studentId: uuid("student_id").notNull().references(() => students.id, { onDelete: "cascade" }), applicationType: applicationTypeEnum("application_type").notNull(), name: varchar("name", { length: 100 }).notNull(), deadline: varchar("deadline", { length: 10 }), createdAt: createdAt() }, (table) => [index("checklist_lists_student_track_idx").on(table.studentId, table.applicationType)]);
+export const requirements = pgTable("requirements", { id: id(), studentId: uuid("student_id").references(() => students.id, { onDelete: "cascade" }), checklistListId: uuid("checklist_list_id").references(() => checklistLists.id, { onDelete: "cascade" }), templateKey: varchar("template_key", { length: 120 }), applicationType: applicationTypeEnum("application_type").notNull(), title: varchar("title", { length: 200 }).notNull(), description: text("description").notNull(), sortOrder: integer("sort_order").notNull(), sourceNote: text("source_note").notNull() }, (table) => [uniqueIndex("requirements_student_template_unique").on(table.studentId, table.checklistListId, table.templateKey)]);
+export const checklistItems = pgTable("checklist_items", { id: id(), studentId: uuid("student_id").notNull().references(() => students.id, { onDelete: "cascade" }), requirementId: uuid("requirement_id").notNull().references(() => requirements.id, { onDelete: "cascade" }), status: checklistStatusEnum("status").notNull().default("missing"), notes: text("notes"), updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()) }, (table) => [uniqueIndex("checklist_items_student_requirement_unique").on(table.studentId, table.requirementId)]);
+export const checklistDocuments = pgTable("checklist_documents", { checklistItemId: uuid("checklist_item_id").notNull().references(() => checklistItems.id, { onDelete: "cascade" }), documentId: uuid("document_id").notNull().references(() => documents.id, { onDelete: "cascade" }) }, (table) => [primaryKey({ columns: [table.checklistItemId, table.documentId] })]);
+export const academicTerms = pgTable("academic_terms", { id: id(), studentId: uuid("student_id").notNull().references(() => students.id, { onDelete: "cascade" }), academicYear: varchar("academic_year", { length: 20 }).notNull(), semester: varchar("semester", { length: 80 }).notNull(), createdAt: createdAt() }, (table) => [uniqueIndex("academic_terms_student_year_semester_unique").on(table.studentId, table.academicYear, table.semester)]);
+export const gradeEntries = pgTable("grade_entries", { id: id(), termId: uuid("term_id").notNull().references(() => academicTerms.id, { onDelete: "cascade" }), sourceDocumentId: uuid("source_document_id").references(() => documents.id, { onDelete: "set null" }), subjectCode: varchar("subject_code", { length: 50 }).notNull(), subjectName: varchar("subject_name", { length: 255 }).notNull(), grade: varchar("grade", { length: 30 }).notNull(), verified: boolean("verified").notNull().default(false), createdAt: createdAt() });
+export const notifications = pgTable("notifications", { id: id(), title: varchar("title", { length: 200 }).notNull(), body: text("body").notNull(), isSample: boolean("is_sample").notNull().default(true), publishedAt: timestamp("published_at", { withTimezone: true }).notNull(), createdAt: createdAt() });

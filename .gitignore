@@ -4,6 +4,7 @@ node_modules/
 out/
 
 # Local configuration and secrets
+.agents/
 .env
 .env.local
 .env.*.local
@@ -11,13 +12,23 @@ out/
 
 # Runtime data: never commit student files or database dumps
 data/uploads/
+data/announcement-import/
+data/local-postgres/
 *.sql
+!src/db/migrations/*.sql
 *.dump
+!src/db/migrations/**/*.sql
 
 # Tooling
 *.tsbuildinfo
 npm-debug.log*
 yarn-debug.log*
 pnpm-debug.log*
+dev-server*.log
+server.log
+arkibo-server*.log
+arkibo-upload-success.png
+artifacts/arkibo-screens/
+artifacts/arkibo-screens.zip
 .DS_Store
 

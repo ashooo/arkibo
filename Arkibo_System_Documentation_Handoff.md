@@ -1,4 +1,4 @@
-# ScholarReady
+# Arkibo
 
 **System Documentation & Development Handoff**  
 **OVERCLOCK 2026 — Team ASCII**  
@@ -10,7 +10,7 @@
 
 ## 1. Executive summary
 
-ScholarReady is a web application for Pasig City college students preparing a new scholarship application or renewal. It provides a **scholarship requirements checklist**, a **searchable scanned-document library**, and an **editable academic grade history**, with a single dashboard for progress and announcements.
+Arkibo is a web application for Pasig City college students preparing a new scholarship application or renewal. It provides a **scholarship requirements checklist**, a **searchable scanned-document library**, and an **editable academic grade history**, with a single dashboard for progress and announcements.
 
 **Key principle:** The **Scholarship Checklist** and **Document Scanner** are different, standalone features. The checklist tracks preparation; the scanner uses Lumen OCR to read text inside images or PDFs and make those documents searchable. Students can optionally link a scanned document to a checklist requirement. The Grade History can reuse OCR text from an OGR after user verification.
 
@@ -180,7 +180,7 @@ Next.js Route Handlers (server)
 
 ## 7. API contracts and shared types
 
-These are **internal ScholarReady routes** (not Lumen's external endpoint). All APIs should return explicit success/error states and appropriate HTTP status codes.
+These are **internal Arkibo routes** (not Lumen's external endpoint). All APIs should return explicit success/error states and appropriate HTTP status codes.
 
 | Route | Method | Owner | Responsibility |
 |:--|:--|:--|:--|
@@ -233,7 +233,7 @@ interface ChecklistItem {
 ## 8. Project folder structure
 
 ```text
-scholarready/
+arkibo/
 ├── public/
 │   └── demo/                   # Synthetic examples only
 ├── src/

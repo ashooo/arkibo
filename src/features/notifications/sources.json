@@ -1,0 +1,27 @@
+{
+  "pasig-scholars-telegram": {
+    "name": "Pasig City Scholarships and Awards Section",
+    "url": "https://t.me/s/pasigscholarship",
+    "websiteHost": "t.me"
+  },
+  "pasig-city-news": {
+    "name": "City Government of Pasig",
+    "url": "https://pasigcity.gov.ph/news-and-releases",
+    "websiteHost": "pasigcity.gov.ph"
+  },
+  "plp-news": {
+    "name": "Pamantasan ng Lungsod ng Pasig",
+    "url": "https://plpasig.edu.ph/feed/",
+    "websiteHost": "plpasig.edu.ph"
+  },
+  "scholarship-office": {
+    "name": "Pasig City Scholarship Office",
+    "url": "https://www.facebook.com/PasigCityScholarshipOffice",
+    "envPrefix": "META_SCHOLARSHIP"
+  },
+  "plp": {
+    "name": "Pamantasan ng Lungsod ng Pasig",
+    "url": "https://www.facebook.com/pamantasannglungsodngpasig",
+    "envPrefix": "META_PLP"
+  }
+}
