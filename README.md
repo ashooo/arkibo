@@ -18,11 +18,19 @@ The app does not initialize, migrate, seed, or reset the database automatically.
 
 ## Announcements
 
-The Pasig Scholars Telegram channel is also a supported source. For automatic updates, use a dedicated bot authorized by the channel operator and set `TELEGRAM_PASIG_BOT_TOKEN` in `.env.local`. Run the importer regularly. Telegram retains pending bot updates for up to 24 hours, so poll more often than once a day if reliable delivery is required.
+The public Pasig Scholars Telegram preview (`https://t.me/s/pasigscholarship`) can be imported without a Telegram account or bot token. Preview recent matching notices without database writes:
+
+```powershell
+node --use-system-ca scripts/import-public-telegram.mjs
+```
+
+After explicit database-write approval, add `--apply` to insert them. This checks up to five public preview pages within a 90-day window, preserves full post text and original dates/links, skips image-only posts without captions, and deduplicates by channel/post ID. Inserts and the sync checkpoint are committed in one transaction; existing records are not overwritten.
+
+The general `notifications:import` command also uses the public preview when `TELEGRAM_PASIG_BOT_TOKEN` is absent. An authorized channel bot remains optional: when its token is configured, the general importer uses bot updates instead. Neither path runs automatically at application startup.
 
 For historical Telegram notices, use the manual import command with `source` set to `pasig-scholars-telegram` and `permalink_url` set to a direct `https://t.me/pasigscholarship/<post-number>` link. The importer uses the post number to deduplicate manual and bot imports. Keep the publication date and a short verified summary.
 
-Start PostgreSQL, set `DATABASE_URL` in `.env.local`, and run `npm run db:migrate`.
+Set `DATABASE_URL` in `.env.local` and use the existing database. Starting a database, applying migrations, or running an import requires explicit approval under the project's database-safety instructions. Do not reset or seed the database to populate this feed.
 The Announcements page displays saved posts from Pasig City Scholarship Office and Pamantasan ng Lungsod ng Pasig, with category, keyword, and Philippine publication-date filters.
 
 Run `npm run notifications:import` with Node.js 22.15 or newer to import from Pasig City's News and Releases archive and PLP's RSS feed. The first run checks available items from the past 30 days and includes three verified historical city notices. Each source saves its own checkpoint after a successful run. Subsequent runs keep previous announcements. Facebook import is optional and runs for Pages configured with a Meta Graph API version, numeric Page ID, and authorized token.

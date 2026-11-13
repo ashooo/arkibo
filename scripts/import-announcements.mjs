@@ -2,15 +2,11 @@ import { readFile } from "node:fs/promises";
 import { loadEnvFile } from "node:process";
 import { openAnnouncementDb, saveAnnouncement } from "../src/features/notifications/store.mjs";
 import { fetchCityAnnouncements, fetchPlpAnnouncements } from "./official-announcement-sources.mjs";
-import { telegramNotice, telegramUpdates } from "./telegram-announcements.mjs";
+import { telegramNotice, telegramUpdates, fetchPublicTelegramAnnouncements } from "./telegram-announcements.mjs";
+import { topics, classifyAnnouncement } from "../src/features/notifications/topics.mjs";
 
 const sources = JSON.parse(await readFile(new URL("../src/features/notifications/sources.json", import.meta.url)));
 const day = 86_400_000;
-const topics = {
-  allowance: /\b(allowances?|pay[ -]?outs?|stipends?|disbursements?)\b/i,
-  spes: /\b(spes|special program for employment of students)\b/i,
-  scholarship: /\b(scholarships?|scholars?|iskolar)\b/i,
-};
 
 function announcement(source, post) {
   if (!post || typeof post.id !== "string" || !post.id.trim()
@@ -38,7 +34,7 @@ function announcement(source, post) {
   const body = typeof post.message === "string" ? post.message.replaceAll("\0", "").trim() : "";
   const title = (post.title || Array.from(body.split(/\r?\n/)[0]).slice(0, 100).join("")).replaceAll("\0", "").trim();
   const content = `${title} ${body}`.normalize("NFKC");
-  const categories = Object.entries(topics).filter(([, pattern]) => pattern.test(content)).map(([key]) => key);
+  const categories = classifyAnnouncement(content);
   return { source, postId: post.id, publishedAt, sourceUrl: link.href, body, categories, title };
 }
 
@@ -73,8 +69,7 @@ async function* fetchPosts(pageId, token, version, since, until) {
 async function syncSource(db, source, config, version) {
   const isTelegram = source === "pasig-scholars-telegram";
   const telegramToken = process.env.TELEGRAM_PASIG_BOT_TOKEN;
-  if (isTelegram && !telegramToken) return;
-  if (isTelegram && !/^\d+:[\w-]+$/.test(telegramToken)) throw new Error("Invalid Telegram bot token format.");
+  if (isTelegram && telegramToken && !/^\d+:[\w-]+$/.test(telegramToken)) throw new Error("Invalid Telegram bot token format.");
   const pageId = process.env[`${config.envPrefix}_PAGE_ID`];
   const token = process.env[`${config.envPrefix}_ACCESS_TOKEN`];
   if (config.envPrefix && !pageId && !token) return;
@@ -97,8 +92,8 @@ async function syncSource(db, source, config, version) {
     const since = new Date(rows.length ? +rows[0].synced_at - day : +until - 30 * day);
     const posts = [];
     let skipped = 0;
-    const updates = isTelegram ? await telegramUpdates(telegramToken) : [];
-    const entries = isTelegram ? updates.map(telegramNotice).filter(Boolean)
+    const updates = isTelegram && telegramToken ? await telegramUpdates(telegramToken) : [];
+    const entries = isTelegram ? (telegramToken ? updates.map(telegramNotice).filter(Boolean) : fetchPublicTelegramAnnouncements(since))
       : source === "pasig-city-news" ? fetchCityAnnouncements(since, !rows.length)
       : source === "plp-news" ? fetchPlpAnnouncements()
       : fetchPosts(pageId, token, version, since, until);
