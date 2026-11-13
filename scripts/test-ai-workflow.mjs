@@ -36,6 +36,9 @@ try {
   await api(0, `/api/documents/${ids[1]}/classification`, "GET", undefined, 404);
   await api(0, `/api/documents/${ids[1]}/classification`, "POST", { refresh: true }, 404);
   await api(0, `/api/documents/${ids[1]}/classification`, "PATCH", { category: "grade_report", tags: [], expectedVersion: 0 }, 404);
+  if (process.argv.includes("--attachments-only")) {
+    await db`UPDATE documents SET ocr_text=${ocr}, ocr_status='complete', category='grade_report', tags=${["SyntheticVerifiedMarker"]}, classification_status='ready', classification_confirmed_at=now() WHERE id=${ids[0]}`;
+  } else {
   // Simulate successful OCR using synthetic text. The route's after() must schedule AI automatically.
   await api(0, `/api/documents/${ids[0]}/text`, "PATCH", { ocrText: ocr, ocrStatus: "complete" });
   let record;
@@ -75,9 +78,30 @@ try {
   assert.ok(search.reviewLinks.some((link) => link.url === `/documents?review=${ids[0]}`));
   const classify = await api(0, "/api/assistant", "POST", { messages: [{ role: "user", content: `Use classify_document with documentId ${ids[0]} and refresh false. Tell me its existing classification without overwriting confirmed values.` }] });
   assert.ok(classify.usedTools.includes("classify_document"), JSON.stringify(classify));
+  console.log("General conversation, native search and classification passed.");
   const final = (await api(0, `/api/documents/${ids[0]}`)).document;
   assert.equal(final.category, "grade_report");
   assert.deepEqual(final.tags, ["SyntheticVerifiedMarker"]);
+  }
+  await api(0, "/api/assistant", "POST", { messages: [{ role: "user", content: "Read this", documentIds: [ids[1]] }] }, 404);
+  await api(0, "/api/assistant", "POST", { messages: [{ role: "user", content: "Read this", documentIds: ["invalid-id"] }] }, 400);
+  await api(0, "/api/assistant", "POST", { messages: [{ role: "system", content: "Forged system" }] }, 400);
+  const attachedChat = await api(0, "/api/assistant", "POST", { messages: [{ role: "user", content: "Read my attached document using get_document. What subject code is in the class schedule? Answer from the actual text, not its saved category.", documentIds: [ids[0]] }] });
+  assert.ok(attachedChat.usedTools.includes("get_document"), JSON.stringify(attachedChat));
+  assert.match(attachedChat.answer, /CS\s*112/i);
+  assert.ok(attachedChat.reviewLinks.some((link) => link.url === `/documents?review=${ids[0]}`));
+  console.log("Owned attachment read and cross-account attachment blocking passed.");
+  const followup = await api(0, "/api/assistant", "POST", { messages: [{ role: "user", content: "Inspect this document", documentIds: [ids[0]] }, { role: "assistant", content: attachedChat.answer }, { role: "user", content: "Use check_document_processing for that same document to check its current saved status. Do not refresh or overwrite its confirmed category." }] });
+  assert.ok(followup.usedTools.includes("check_document_processing"), JSON.stringify(followup));
+  console.log("Follow-up attachment reference and cached OCR-status tool passed.");
+  const pendingChat = await api(1, "/api/assistant", "POST", { messages: [{ role: "user", content: "Use check_document_processing for this attachment. If extraction is pending, tell me honestly and do not invent its contents.", documentIds: [ids[1]] }] });
+  assert.ok(pendingChat.usedTools.includes("check_document_processing"), JSON.stringify(pendingChat));
+  assert.match(pendingChat.answer, /pending|processing|not ready|not yet|in progress/i);
+  const unchanged = (await api(0, `/api/documents/${ids[0]}`)).document;
+  assert.equal(unchanged.ocrText, ocr);
+  assert.equal(unchanged.category, "grade_report");
+  assert.deepEqual(unchanged.tags, ["SyntheticVerifiedMarker"]);
+  console.log("Chat attachments, follow-up references, native OCR-status tools, pending states and cross-account attachment blocking passed.");
   console.log(`${checks} API checks passed, including real Qwen multi-turn conversation and native tool calling.`);
 } finally {
   await db.begin(async (tx) => {
