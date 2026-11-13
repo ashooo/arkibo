@@ -4,7 +4,7 @@ ScholarReady helps Pasig City college students prepare scholarship applications 
 
 ## Status
 
-This repository contains the shared app structure and an announcement feed. The remaining feature modules and Lumen OCR integration still need implementation and verification.
+The account workspace includes documents with Lumen OCR, searchable text and metadata, a scholarship checklist, grades, announcements, and a local Qwen assistant.
 
 ## Local setup
 
@@ -15,6 +15,22 @@ This repository contains the shared app structure and an announcement feed. The 
 5. Run `npm run dev`.
 
 The app does not initialize, migrate, seed, or reset the database automatically. Keep `.env.local`, `data/uploads/`, database dumps, and real student files out of version control.
+
+## Local AI and document organization
+
+Run Ollama with the locally installed `qwen3.5:2b` model. The defaults are `OLLAMA_BASE_URL=http://127.0.0.1:11434` and `QWEN_MODEL=qwen3.5:2b`; override them in `.env.local` if your local model tag differs. Only loopback Ollama URLs are accepted. No AI API key or cloud model is used. Lumen still performs OCR using its separately configured key and secret.
+
+Upload through **My Documents → Add document** without choosing a category. Once OCR finishes, an independent AI task proposes a document type, grounded tags, academic metadata, and matching requirements for the student's application track. Files remain saved if AI is unavailable. Unknown or inconsistent results need review. Open **Category & tags** from a document's menu to confirm or edit metadata, analyze existing OCR again, or explicitly attach a suggested checklist match. Attaching sets the existing uploaded state; it never approves or completes a requirement. Original OCR is preserved and is not displayed in document cards.
+
+Confirmed metadata is protected from later AI results. Analysis reuses cached results unless explicitly refreshed, and optimistic version checks protect concurrent edits. Existing manually categorized documents are preserved. Search includes filenames, OCR, type labels, tags, synonyms, and fuzzy matching. AI suggestions do not guarantee scholarship-office acceptance.
+
+The **Assistant** page supports general conversation and native `search_documents`, `get_document`, `classify_document`, and `get_checklist_requirements` tools, scoped to the signed-in student. Its history stays in memory while the page is open. Classification has a separate prompt and never enters conversation history. Retrieved OCR is treated as untrusted data. Confirmation and checklist attachment require the review form.
+
+`src/lib/server/document-classifier.ts` is shared by OCR completion, manual OCR updates, the classification API, and assistant tools. Background work uses Next.js `after()` rather than a durable queue; interrupted processing can be retried through **Analyze again** after its four-minute lease expires. A cold local model may take several minutes. Manual categorization remains available while it runs or when it fails.
+
+Review migrations `0006_fearless_chimera` and `0007_bumpy_leader` before applying them with `npm run db:migrate`, and obtain explicit database-write approval first. They add classification/tag/cache/confirmation fields and a metadata search index without seeding records. Startup never runs migrations.
+
+Run `npm test`, `npm run lint`, `npm run typecheck`, and `npm run build` for ordinary checks. `node node_modules/tsx/dist/cli.mjs scripts/test-local-classifier.ts` additionally checks synthetic text against local Ollama. `node scripts/test-ai-workflow.mjs --allow-db-writes` requires explicit approval: it creates two synthetic accounts and fixtures, checks automatic classification, confirmation, search, checklist attachment, ownership, multi-turn chat, and real native tools, then removes only those fixtures. It makes no Lumen calls.
 
 ## Announcements
 

@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Bell, ClipboardList, FolderArchive, GraduationCap, House, Landmark, LogOut, X } from "lucide-react";
+import { Bell, ClipboardList, FolderArchive, GraduationCap, House, Landmark, LogOut, MessageCircle, X } from "lucide-react";
 import { toast } from "sonner";
 import { accountRequest } from "@/lib/account";
 import { cn } from "@/lib/utils";
@@ -17,6 +17,7 @@ const navigation = [
   { href: "/checklist", label: "Checklist", Icon: ClipboardList },
   { href: "/documents", label: "My Documents", Icon: FolderArchive },
   { href: "/grades", label: "Grades", Icon: GraduationCap },
+  { href: "/assistant", label: "Assistant", Icon: MessageCircle },
 ];
 
 export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => void }) {
