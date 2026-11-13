@@ -13,9 +13,9 @@
   }
 
   .dark {
-    --bg-page: #181917;
+    --bg-page: #131e1d;
     --text-page: #f8fafc;
-    --border-color: #44463e;
+    --border-color: #354844;
   }
 
   body {
@@ -29,7 +29,7 @@
 }
 
 @layer components {
-  .dark .text-primary, .dark .text-primary-dark { color: #bdd4b2; }
+  .dark .text-primary, .dark .text-primary-dark { color: #a7d8bb; }
   .portal-frame { @apply flex h-dvh min-w-0; }
   .workspace-card {
     @apply flex h-full flex-col overflow-hidden rounded-xl border border-slate-border bg-surface-lowest transition-shadow hover:shadow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-focus-ring dark:focus-visible:outline-dark-accent dark:border-dark-border dark:bg-dark-card;
@@ -106,3 +106,68 @@
 .file-preview { width: 100%; height: 36rem; border: 1px solid #dbe3ef; border-radius: .35rem; }
 .image-preview { display: block; width: 100%; max-height: 42rem; object-fit: contain; background: #f8fafc; border: 1px solid #dbe3ef; border-radius: .35rem; }
 @media (max-width: 640px) { .search, .document-row, .result-heading { align-items: stretch; flex-direction: column; } }
+
+@layer components {
+  .public-scene {
+    background-image: radial-gradient(ellipse at 0 0, #e8efe3 0 17%, transparent 17.2%), radial-gradient(ellipse at 100% 100%, #e8efe3 0 20%, transparent 20.2%);
+  }
+  .dark .public-scene {
+    background-image: radial-gradient(ellipse at 0 0, #1c322c 0 17%, transparent 17.2%), radial-gradient(ellipse at 100% 100%, #1c322c 0 20%, transparent 20.2%);
+  }
+  .feature-tile {
+    @apply flex h-full w-full items-center gap-4 rounded-2xl border border-slate-border bg-surface-lowest p-4 transition-colors hover:bg-surface-low focus-visible:outline focus-visible:outline-2 focus-visible:outline-focus-ring sm:p-6 dark:border-dark-border dark:bg-dark-card dark:hover:bg-dark-cardAlt;
+    background-image: radial-gradient(ellipse at 110% 115%, var(--tile-glow, transparent) 0 32%, transparent 33%);
+  }
+  .feature-icon {
+    @apply grid size-12 shrink-0 place-items-center rounded-xl sm:size-14;
+    background: var(--tile-icon, #e8efe3);
+    color: var(--tile-ink, #40563a);
+  }
+  .feature-arrow {
+    @apply ml-auto grid size-9 shrink-0 place-items-center rounded-full border border-slate-border dark:border-dark-border;
+  }
+  [data-tone="green"] { --tile-icon: #dbeadf; --tile-ink: #315a42; --tile-glow: #eaf3eb; }
+  [data-tone="purple"] { --tile-icon: #ede5f6; --tile-ink: #5d487e; --tile-glow: #f2edf8; }
+  [data-tone="gold"] { --tile-icon: #f4e7cb; --tile-ink: #78531f; --tile-glow: #f9f0de; }
+  [data-tone="blue"] { --tile-icon: #dbedf0; --tile-ink: #285764; --tile-glow: #e9f4f6; }
+  .dark [data-tone="green"] { --tile-icon: #385e49; --tile-ink: #c6ead3; --tile-glow: #233d33; }
+  .dark [data-tone="purple"] { --tile-icon: #4d426a; --tile-ink: #e3d7ff; --tile-glow: #302c40; }
+  .dark [data-tone="gold"] { --tile-icon: #654e30; --tile-ink: #ffe3aa; --tile-glow: #393529; }
+  .dark [data-tone="blue"] { --tile-icon: #315561; --tile-ink: #c5edf4; --tile-glow: #21383d; }
+}
+
+@layer components {
+  .workspace-banner {
+    @apply border border-slate-border bg-surface-lowest dark:border-dark-border dark:bg-dark-card;
+  }
+  .grade-panel {
+    @apply rounded-2xl border border-slate-border bg-surface-lowest p-5 dark:border-dark-border dark:bg-dark-card;
+  }
+  .grade-tip {
+    @apply flex items-center gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950 dark:border-amber-800/50 dark:bg-amber-900/20 dark:text-amber-100;
+  }
+  .grade-tip svg { @apply shrink-0; }
+  .grade-workspace .muted { @apply text-on-surface-variant dark:text-slate-300; }
+  .grade-workspace input:not([type="checkbox"]), .grade-workspace select {
+    @apply min-h-11 rounded-lg border border-slate-border bg-surface-lowest px-3 text-sm dark:border-dark-border dark:bg-dark-surface dark:text-slate-100;
+  }
+  .grade-workspace button, .grade-action {
+    @apply min-h-11 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark dark:bg-dark-accentSurface dark:text-dark-accent dark:hover:bg-dark-cardAlt;
+  }
+  .dark .grade-workspace .document-row, .dark .grade-workspace .ocr-text {
+    @apply border-dark-border bg-dark-card;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .scholar-mascot {
+    animation: scholar-mascot-greeting 850ms ease-out both;
+    transform-origin: center bottom;
+  }
+
+  @keyframes scholar-mascot-greeting {
+    0%, 100% { transform: translateY(0) rotate(0); }
+    35% { transform: translateY(-7px) rotate(-6deg); }
+    65% { transform: translateY(-2px) rotate(4deg); }
+  }
+}

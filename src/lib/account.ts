@@ -4,6 +4,17 @@ export const alertTopics = ["Scholarship", "Allowance", "SPES"];
 
 export const maxProfilePhotoBytes = 512 * 1024;
 
+export const educationYears = {
+  Elementary: ["Kindergarten", "Grade 1", "Grade 2", "Grade 3", "Grade 4", "Grade 5", "Grade 6"],
+  "Junior High School": ["Grade 7", "Grade 8", "Grade 9", "Grade 10"],
+  "Senior High School": ["Grade 11", "Grade 12"],
+  College: yearLevels,
+};
+
+export function isEducationLevel(value: unknown): value is keyof typeof educationYears {
+  return typeof value === "string" && Object.hasOwn(educationYears, value);
+}
+
 export interface AccountProfile {
   name: string;
   photo?: string | null;
@@ -11,6 +22,8 @@ export interface AccountProfile {
   middleName?: string;
   lastName?: string;
   yearLevel: string;
+  educationLevel?: keyof typeof educationYears;
+  school?: string;
   track: "new" | "renewal";
   topics: string[];
 }

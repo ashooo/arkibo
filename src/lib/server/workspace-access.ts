@@ -13,7 +13,12 @@ const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export async function workspaceAccess(request: Request, provision = false): Promise<Access> {
   const req = new NextRequest(request.url, { headers: request.headers });
   const origin = req.headers.get("origin");
-  if (request.method !== "GET" && origin && origin !== req.nextUrl.origin) return fail("Invalid request origin.", 403);
+  // Next can normalize the URL hostname to localhost even when the browser uses 127.0.0.1.
+  const host = req.headers.get("host");
+  const expectedOrigin = host ? `${req.nextUrl.protocol}//${host}` : req.nextUrl.origin;
+  if (request.method !== "GET" && origin && origin !== expectedOrigin) {
+    return fail("Invalid request origin.", 403);
+  }
   const token = req.cookies.get("scholarready_session")?.value;
   if (!token) return fail("Sign in to access your documents and grades.", 401);
   try {

@@ -1,18 +1,19 @@
 "use client";
 
+import { ScholarMascot } from "@/components/ui/scholar-mascot";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
-import { ArrowLeft, CloudUpload, GraduationCap, Save, UserRound } from "lucide-react";
+import { ArrowLeft, ChevronDown, CloudUpload, GraduationCap, Save, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { accountRequest, alertTopics, maxProfilePhotoBytes, schoolName, yearLevels } from "@/lib/account";
+import { accountRequest, alertTopics, educationYears, isEducationLevel, maxProfilePhotoBytes, schoolName } from "@/lib/account";
 import { useStudent } from "@/lib/student-context";
 
-const field = "grid gap-2 text-sm font-semibold";
-const select = "h-10 rounded-md border border-slate-border bg-surface-lowest px-3 text-sm dark:border-dark-border dark:bg-dark-card";
+const field = "grid min-w-0 gap-2 text-sm font-semibold";
+const select = "block h-10 w-full min-w-0 max-w-full appearance-none truncate rounded-md border border-slate-border bg-surface-lowest pl-3 pr-10 text-sm dark:border-dark-border dark:bg-dark-card";
 
 export default function AccountPage() {
   const router = useRouter();
@@ -22,6 +23,9 @@ export default function AccountPage() {
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState<{ text: string; error?: boolean }>();
   const profile = user?.profile;
+  const [selectedLevel, setSelectedLevel] = useState("");
+  const educationLevel = selectedLevel || profile?.educationLevel || (profile ? "College" : "");
+  const availableYears = isEducationLevel(educationLevel) ? educationYears[educationLevel] : [];
   const heading = user ? "Student profile" : signingIn ? "Sign in" : "Create your account";
 
   async function submitCredentials(event: FormEvent<HTMLFormElement>) {
@@ -51,10 +55,11 @@ export default function AccountPage() {
     const firstName = String(data.get("firstName")).trim();
     const middleName = String(data.get("middleName")).trim();
     const lastName = String(data.get("lastName")).trim();
+    const school = String(data.get("school")).trim();
     const yearLevel = String(data.get("year"));
     const track = data.get("track");
-    if (!firstName || !lastName || !yearLevels.includes(yearLevel) || (track !== "new" && track !== "renewal")) {
-      setFeedback({ text: "Enter your first and last names and select your year level and application track.", error: true });
+    if (!firstName || !lastName || !school || !availableYears.includes(yearLevel) || (track !== "new" && track !== "renewal")) {
+      setFeedback({ text: "Enter your name and school, then select your education level, grade or year, and application track.", error: true });
       return;
     }
     setBusy(true);
@@ -74,7 +79,7 @@ export default function AccountPage() {
         });
       }
       setUser(await accountRequest("POST", {
-        action: "profile", firstName, middleName, lastName, yearLevel, track, topics: data.getAll("topics"), photo,
+        action: "profile", firstName, middleName, lastName, school, educationLevel, yearLevel, track, topics: data.getAll("topics"), photo,
       }));
       router.replace("/dashboard");
     } catch (error) {
@@ -89,6 +94,7 @@ export default function AccountPage() {
     try {
       setUser(await accountRequest("POST", { action: "signout" }));
       setSelectedPhoto(null);
+      setSelectedLevel("");
       setSigningIn(true);
     } catch {
       setFeedback({ text: "Couldn’t sign out. Try again.", error: true });
@@ -96,7 +102,7 @@ export default function AccountPage() {
   }
 
   return (
-    <div className="min-h-dvh bg-surface dark:bg-dark-bg">
+    <div className="public-scene min-h-dvh bg-surface dark:bg-dark-bg">
       <header className="flex min-h-16 flex-wrap items-center justify-between gap-2 border-b border-slate-border bg-surface-lowest px-4 py-2 dark:border-dark-border dark:bg-dark-surface sm:px-8">
         <Link href="/" className="flex items-center gap-2 text-lg font-semibold">
           <GraduationCap aria-hidden="true" className="text-primary" size={24} /> ScholarReady
@@ -113,7 +119,8 @@ export default function AccountPage() {
             <ArrowLeft aria-hidden="true" size={16} /> Go back to Home
           </Link>
         )}
-        <section className="space-y-6 rounded-xl border border-slate-border bg-surface-lowest p-5 dark:border-dark-border dark:bg-dark-card sm:p-8">
+        <section className="space-y-6 rounded-2xl border border-slate-border bg-surface-lowest p-5 dark:border-dark-border dark:bg-dark-card sm:p-9">
+          {!user && <ScholarMascot />}
           <h1 className={user ? "flex items-center gap-3 border-b border-slate-border pb-5 text-2xl font-semibold tracking-tight dark:border-dark-border" : "text-2xl font-semibold tracking-tight"}>
             {user && <GraduationCap aria-hidden="true" size={28} className="shrink-0 text-primary" />}
             {heading}
@@ -161,19 +168,34 @@ export default function AccountPage() {
               <label className={field}>First name<Input name="firstName" autoComplete="given-name" defaultValue={profile?.firstName} maxLength={100} required /></label>
               <label className={field}>Middle name (optional)<Input name="middleName" autoComplete="additional-name" defaultValue={profile?.middleName} maxLength={100} /></label>
               <label className={field}>Last name<Input name="lastName" autoComplete="family-name" defaultValue={profile?.lastName} maxLength={100} required /></label>
-              <label className={field}>School<Input value={schoolName} readOnly /></label>
-              <label className={field}>Year level
-                <select className={select} name="year" required defaultValue={profile?.yearLevel ?? ""}>
-                  <option value="" disabled>Select your year level</option>
-                  {yearLevels.map((year) => <option key={year}>{year}</option>)}
-                </select>
+              <label className={field}>School<Input name="school" autoComplete="organization" defaultValue={profile?.school ?? (profile ? schoolName : "")} maxLength={150} required /></label>
+              <label className={field}>Education level
+                <span className="relative block min-w-0">
+                  <select className={select} value={educationLevel} onChange={(event) => setSelectedLevel(event.target.value)} required>
+                    <option value="" disabled>Select your education level</option>
+                    {Object.keys(educationYears).map((level) => <option key={level}>{level}</option>)}
+                  </select>
+                  <ChevronDown aria-hidden="true" size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2" />
+                </span>
+              </label>
+              <label className={field}>Grade or year level
+                <span className="relative block min-w-0">
+                  <select className={select} key={educationLevel} name="year" required disabled={!educationLevel} defaultValue={profile && availableYears.includes(profile.yearLevel) ? profile.yearLevel : ""}>
+                    <option value="" disabled>Select your grade or year</option>
+                    {availableYears.map((year) => <option key={year}>{year}</option>)}
+                  </select>
+                  <ChevronDown aria-hidden="true" size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2" />
+                </span>
               </label>
               <label className={field}>Application track
-                <select className={select} name="track" defaultValue={profile?.track ?? ""} required>
-                  <option value="" disabled>Select your application track</option>
-                  <option value="new">New Applicant</option>
-                  <option value="renewal">Renewal Scholar</option>
-                </select>
+                <span className="relative block min-w-0">
+                  <select className={select} name="track" defaultValue={profile?.track ?? ""} required>
+                    <option value="" disabled>Select your application track</option>
+                    <option value="new">New Applicant</option>
+                    <option value="renewal">Renewal Scholar</option>
+                  </select>
+                  <ChevronDown aria-hidden="true" size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2" />
+                </span>
               </label>
               <fieldset className="col-span-full flex flex-wrap gap-x-6 gap-y-2">
                 <legend className="mb-2 text-sm font-semibold">Announcement topics (optional)</legend>
@@ -201,8 +223,8 @@ export default function AccountPage() {
                   <Input name="password" type="password" autoComplete={signingIn ? "current-password" : "new-password"} minLength={signingIn ? undefined : 8} maxLength={128} required />
                   {!signingIn && <span className="text-xs font-normal">Use at least 8 characters.</span>}
                 </label>
-                {!signingIn && <p className="text-sm">Local accounts can sign in immediately. Email verification is disabled for local testing.</p>}
-                <Button type="submit" isLoading={busy} className="w-full">{heading}</Button>
+                {!signingIn && <p className="rounded-xl border border-slate-border bg-primary-soft p-4 text-sm leading-relaxed dark:border-dark-border dark:bg-dark-accentSurface">Local accounts can sign in immediately. Email verification is disabled for local testing.</p>}
+                <Button type="submit" isLoading={busy} className="min-h-12 w-full">{heading}</Button>
               </form>
               <Button variant="ghost" disabled={busy} onClick={() => { setSigningIn(!signingIn); setFeedback(undefined); }}>
                 {signingIn ? "Create an account" : "Already have an account? Sign in"}

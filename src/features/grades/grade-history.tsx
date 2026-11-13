@@ -1,5 +1,9 @@
 "use client";
 
+import { ScholarMascot } from "@/components/ui/scholar-mascot";
+import Link from "next/link";
+import { ChartNoAxesColumnIncreasing, ChevronDown, FileText, Sparkles } from "lucide-react";
+
 import { FormEvent, useEffect, useState } from "react";
 import type { AcademicTerm, GradeEntry, StoredDocument, StudentProfile } from "@/types/shared";
 
@@ -83,11 +87,29 @@ export function GradeHistory() {
     setMessage(payload.drafts?.length ? "Review each suggested row, then add it manually below." : "No grade rows were confidently detected. Add entries manually.");
   }
 
-  return <section className="card stack"><div><h1>Grade History</h1><p className="muted">OCR can help you read an OGR, but you must review every row before marking it verified.</p></div>
+  return <section className="grade-workspace stack min-w-0 w-full grid-cols-1">
+    <header className="flex items-center gap-4">
+      <span className="feature-icon" data-tone="gold"><ChartNoAxesColumnIncreasing aria-hidden="true" /></span>
+      <div><h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Grade History</h1>
+      <p className="muted mt-1">{profiles[0]?.displayName}{profiles[0] && (profiles[0].applicationType === "renewal" ? " · Renewal Scholar" : " · New Applicant")}</p></div>
+    </header>
+    <p className="grade-tip"><Sparkles size={20} aria-hidden="true" /> OCR can help you read an OGR, but you must review every row before marking it verified.</p>
     {message && <p className="notice" aria-live="polite">{message}</p>}
-    <p className="muted">{profiles[0]?.displayName} · {profiles[0]?.applicationType}</p>
-    {studentId && <><form className="inline-form" onSubmit={createTerm}><input name="academicYear" placeholder="Academic year (e.g. 2026-2027)" required /><input name="semester" placeholder="Semester (e.g. First Semester)" required /><button>Create term</button></form>
-    <label className="field"><span>Academic term</span><select value={termId} onChange={(event) => { setTermId(event.target.value); setGrades([]); }}><option value="">Select a term</option>{terms.map((term) => <option key={term.id} value={term.id}>{term.academicYear} · {term.semester}</option>)}</select></label></>}
+    {studentId && <><form className="grade-panel stack" onSubmit={createTerm}>
+      <h2 className="text-lg font-semibold">Create an academic term</h2>
+      <div className="grid items-end gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
+        <label className="field">Academic year<input name="academicYear" placeholder="e.g. 2026–2027" required /></label>
+        <label className="field">Semester<input name="semester" placeholder="e.g. First Semester" required /></label>
+        <button className="grade-action">Create term</button>
+      </div>
+    </form>
+    <label className="grade-panel field min-w-0 w-full grid-cols-1"><span>Academic term</span><span className="relative block w-full min-w-0"><select className="block w-full min-w-0 max-w-full !appearance-none truncate !pr-10" value={termId} onChange={(event) => { setTermId(event.target.value); setGrades([]); }}><option value="">Select a term</option>{terms.map((term) => <option key={term.id} value={term.id}>{term.academicYear} · {term.semester}</option>)}</select><ChevronDown aria-hidden="true" size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2" /></span></label></>}
+    {!termId && <div className="grade-panel grid justify-items-center gap-3 py-10 text-center">
+      <ScholarMascot size={88} />
+      <h2 className="text-2xl font-semibold">No grades yet</h2>
+      <p className="muted">Create or select a term to review your grades.</p>
+      <Link className="grade-action inline-flex items-center gap-2" href="/scanner"><FileText size={18} aria-hidden="true" /> Scan an OGR</Link>
+    </div>}
     {termId && <><label className="field"><span>Optional OGR source</span><select value={sourceDocumentId} onChange={(event) => setSourceDocumentId(event.target.value)}><option value="">Manual entry — no source document</option>{sourceDocuments.map((document) => <option key={document.id} value={document.id}>{document.originalName}</option>)}</select></label>
       {sourceDocumentId && <><button type="button" className="secondary" onClick={() => void createDrafts()}>Suggest grade rows from OCR</button><pre className="ocr-text">{sourceDocuments.find((document) => document.id === sourceDocumentId)?.ocrText}</pre></>}
       {drafts.length > 0 && <section className="draft-list"><h2>Unverified suggestions</h2>{drafts.map((draft) => <p key={`${draft.subjectCode}-${draft.subjectName}`}><strong>{draft.subjectCode}</strong> — {draft.subjectName} <span className="muted">({draft.grade})</span></p>)}</section>}

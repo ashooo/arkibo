@@ -1,13 +1,16 @@
+import { ScholarMascot } from "@/components/ui/scholar-mascot";
+import { NoticePreview } from "@/features/notifications/notice-preview";
 import Link from "next/link";
 import { ArrowUpRight, Briefcase, CalendarDays, ChevronLeft, ChevronRight, GraduationCap, Wallet } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import sources from "@/features/notifications/sources.json";
 import { listAnnouncements, openAnnouncementDb } from "@/features/notifications/store.mjs";
+import { announcementPreview } from "@/features/notifications/preview";
 import styles from "./notifications.module.css";
 
 export const dynamic = "force-dynamic";
-const pageSize = 5;
+const pageSize = 10;
 
 const categories = { allowance: "Allowance", spes: "SPES", scholarship: "Scholarship" };
 const categoryStyle = {
@@ -67,6 +70,7 @@ export default async function NotificationsPage({ searchParams }: {
 
   const pageNumbers = [...new Set([1, page - 1, page, page + 1, pageCount])]
     .filter((number) => number >= 1 && number <= pageCount).sort((a, b) => a - b);
+  const previews = await Promise.all(visibleNotices.map((post) => announcementPreview(post.sourceUrl)));
   const today = localDay.format(new Date());
 
   function pageHref(target: number, selectedCategory = category) {
@@ -80,11 +84,11 @@ export default async function NotificationsPage({ searchParams }: {
 
   return (
     <section className="flex flex-col gap-6 pb-8 text-on-surface dark:text-slate-100">
-      <header className="workspace-banner">
+      <header className="py-2">
         <div className="space-y-2">
-          <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">Announcements</h1>
+          <h1 className="text-2xl font-extrabold tracking-tight sm:text-4xl">Announcements</h1>
           <p className="text-sm text-on-surface-variant dark:text-slate-400">
-            Scholarship, allowance, and SPES updates from official sources.
+            Latest scholarship, allowance, and SPES opportunities and updates from official sources.
           </p>
         </div>
       </header>
@@ -108,9 +112,12 @@ export default async function NotificationsPage({ searchParams }: {
       {invalidRange && <p className={styles.status} role="alert">Choose a From date on or before the To date.</p>}
       {!invalidRange && !results && <p className={styles.status} role="alert">Announcements are temporarily unavailable. Please try again later.</p>}
       {!invalidRange && results?.length === 0 && (
-        <p className={styles.status}>{category || from || to || query
+        <div className={styles.status}>
+          {!category && !from && !to && !query && <ScholarMascot className="mb-3" />}
+          <p>{category || from || to || query
           ? "No announcements match these filters."
           : "No announcements have been added yet."}</p>
+        </div>
       )}
       {!invalidRange && !!results?.length && (
         <div className="space-y-4">
@@ -118,22 +125,22 @@ export default async function NotificationsPage({ searchParams }: {
             <h2 className="text-xl font-bold">Notices</h2>
             <p className="text-sm text-on-surface-variant dark:text-slate-300">Showing {start + 1}–{start + visibleNotices.length} of {total} · Newest first</p>
           </div>
-          <ul className="space-y-4">
-          {visibleNotices.map((post) => {
+          <ul className="grid gap-4 sm:grid-cols-2">
+          {visibleNotices.map((post, index) => {
             const source = sources[post.source as keyof typeof sources]?.name ?? post.source;
             const details = verifiedDetails[post.sourceUrl];
             return (
-            <li className={styles.notice} key={`${post.source}:${post.postId}`}>
-              <div className="min-w-0 space-y-3">
-              <h3 className="break-words text-lg font-bold leading-snug">{post.title}</h3>
+            <li className="flex min-w-0 flex-col overflow-hidden rounded-2xl border border-slate-border bg-surface-lowest dark:border-dark-border dark:bg-dark-card" key={`${post.source}:${post.postId}`}>
+              <NoticePreview key={previews[index] ?? "fallback"} src={previews[index]} category={post.categories[0]} />
+              <div className="flex flex-1 flex-col gap-3 p-4 sm:p-5">
               <div className={styles.meta}>
                 {post.categories.map((value) => {
                   const { Icon, variant } = categoryStyle[value];
                   return <Badge variant={variant} size="sm" key={value}><Icon aria-hidden="true" size={13} className="mr-1" />{categories[value]}</Badge>;
                 })}
-                <time dateTime={post.publishedAt.toISOString()}>{displayDate.format(post.publishedAt)}</time>
               </div>
-              {post.body && post.body !== post.title && <p className="max-w-prose break-words text-sm leading-relaxed text-on-surface-variant dark:text-slate-300">{post.body.length > 320 ? `${post.body.slice(0, 320).trimEnd()}…` : post.body}</p>}
+              <h3 className="break-words text-lg font-bold leading-snug">{post.title}</h3>
+              {post.body && post.body !== post.title && <p className="line-clamp-3 max-w-prose break-words text-sm leading-relaxed text-on-surface-variant dark:text-slate-300">{post.body.length > 320 ? `${post.body.slice(0, 320).trimEnd()}…` : post.body}</p>}
               {details && (
                 <div className="rounded-md bg-surface-low p-3 text-sm dark:bg-dark-surface">
                   <p className="font-semibold">{details.audience}</p>
@@ -142,9 +149,10 @@ export default async function NotificationsPage({ searchParams }: {
                   </p>
                 </div>
               )}
-              <div className="flex flex-wrap items-center justify-between gap-x-5 border-t border-slate-border pt-2 dark:border-dark-border">
+              <div className="mt-auto flex flex-wrap items-center justify-between gap-x-3 border-t border-slate-border pt-2 dark:border-dark-border">
                 <span className="text-sm text-on-surface-variant dark:text-slate-300">{source}</span>
                 <a className={styles.link} href={post.sourceUrl} aria-label={`View original notice: ${post.title}`}>View original notice <ArrowUpRight aria-hidden="true" size={16} /></a>
+                <time className="ml-auto whitespace-nowrap text-sm font-bold text-on-surface-variant dark:text-slate-300" dateTime={post.publishedAt.toISOString()}>{displayDate.format(post.publishedAt)}</time>
               </div>
               </div>
             </li>

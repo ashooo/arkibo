@@ -94,7 +94,7 @@ export function StudentProvider({ children }: { children: React.ReactNode }) {
         student: user ? {
           id: user.id,
           name: profile?.name ?? "Student",
-          school: schoolName,
+          school: profile?.school ?? schoolName,
           program: "",
           studentNumber: "",
           yearLevel: profile?.yearLevel ?? "",
