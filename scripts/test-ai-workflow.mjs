@@ -33,6 +33,8 @@ try {
     studentIds[i] = payload.students[0].id;
     await db`INSERT INTO documents (id,student_id,original_name,mime_type,storage_path) VALUES (${ids[i]},${studentIds[i]},${"IMG_synthetic.jpg"},${"image/jpeg"},${`data/uploads/ai-test-${ids[i]}.jpg`})`;
   }
+  const folder = await api(0, "/api/checklist", "POST", { name: "AI synthetic folder", template: "renewal" }, 201);
+  const enrollmentId = folder.customTemplates.find((entry) => entry.title === "Proof of Enrollment").id;
   await api(0, `/api/documents/${ids[1]}/classification`, "GET", undefined, 404);
   await api(0, `/api/documents/${ids[1]}/classification`, "POST", { refresh: true }, 404);
   await api(0, `/api/documents/${ids[1]}/classification`, "PATCH", { category: "grade_report", tags: [], expectedVersion: 0 }, 404);
@@ -60,8 +62,8 @@ try {
   assert.equal(String(afterCache.classification_updated_at), String(beforeCache.classification_updated_at));
   const found = await api(0, "/api/documents?q=First%20Semester");
   assert.ok(found.documents.some((entry) => entry.id === ids[0]));
-  const attached = await api(0, "/api/checklist/renewal-proof-enrollment/documents", "POST", { applicationType: "renewal", documentId: ids[0] });
-  assert.equal(attached.items["renewal-proof-enrollment"].status, "uploaded");
+  const attached = await api(0, `/api/checklist/${enrollmentId}/documents`, "POST", { listId: folder.listId, documentId: ids[0] });
+  assert.equal(attached.items[enrollmentId].status, "uploaded");
   const confirmed = await api(0, `/api/documents/${ids[0]}/classification`, "PATCH", { category: "grade_report", tags: ["SyntheticVerifiedMarker"], expectedVersion: record.metadataVersion });
   assert.ok(confirmed.document.classificationConfirmedAt);
   await api(0, `/api/documents/${ids[0]}/classification`, "PATCH", { category: "student_id", tags: [], expectedVersion: record.metadataVersion }, 409);

@@ -38,3 +38,9 @@ test("manual tags are validated and deduplicated", () => {
   assert.throws(() => cleanUserTags(["bad\u0000tag"]));
   assert.throws(() => cleanUserTags(Array(17).fill("tag")));
 });
+test("folder requirement UUIDs retain their original type-checking rules", () => {
+  const id = "12345678-1234-1234-1234-123456789abc";
+  const folders = [{ ...candidates[0], id, templateKey: candidates[0].id, listId: "synthetic-folder", listName: "Synthetic renewal" }];
+  assert.deepEqual(validateClassification({ ...valid, suggestedRequirementIds: [id] }, text, folders).suggestedRequirementIds, [id]);
+  assert.equal(validateClassification({ ...valid, category: "student_id", tags: [], suggestedRequirementIds: [id] }, text, folders).category, "unclassified");
+});

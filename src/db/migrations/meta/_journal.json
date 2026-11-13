@@ -57,6 +57,13 @@
       "when": 1794534633423,
       "tag": "0007_bumpy_leader",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1794545708631,
+      "tag": "0008_checklist_folders",
+      "breakpoints": true
     }
   ]
 }

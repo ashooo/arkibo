@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
       const user = await getUser(token);
       if (!user) return failure("Sign in to edit your profile.", 401);
       const { track } = body;
-      if (track !== "new" && track !== "renewal") return failure("Select an application track.", 400);
+      if (track !== "new" && track !== "renewal") return failure("Review your account settings and try again.", 400);
       if (body.action === "track") {
         const result = await db.query(
           "UPDATE accounts SET profile = jsonb_set(profile, '{track}', to_jsonb($2::text)) WHERE id = $1 AND profile IS NOT NULL RETURNING id, profile",

@@ -57,9 +57,9 @@ export default function AccountPage() {
     const lastName = String(data.get("lastName")).trim();
     const school = String(data.get("school")).trim();
     const yearLevel = String(data.get("year"));
-    const track = data.get("track");
-    if (!firstName || !lastName || !school || !availableYears.includes(yearLevel) || (track !== "new" && track !== "renewal")) {
-      setFeedback({ text: "Enter your name and school, then select your education level, grade or year, and application track.", error: true });
+    const track = profile?.track ?? "new";
+    if (!firstName || !lastName || !school || !availableYears.includes(yearLevel)) {
+      setFeedback({ text: "Enter your name and school, then select your education level, grade or year.", error: true });
       return;
     }
     setBusy(true);
@@ -183,16 +183,6 @@ export default function AccountPage() {
                   <select className={select} key={educationLevel} name="year" required disabled={!educationLevel} defaultValue={profile && availableYears.includes(profile.yearLevel) ? profile.yearLevel : ""}>
                     <option value="" disabled>Select your grade or year</option>
                     {availableYears.map((year) => <option key={year}>{year}</option>)}
-                  </select>
-                  <ChevronDown aria-hidden="true" size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2" />
-                </span>
-              </label>
-              <label className={field}>Application track
-                <span className="relative block min-w-0">
-                  <select className={select} name="track" defaultValue={profile?.track ?? ""} required>
-                    <option value="" disabled>Select your application track</option>
-                    <option value="new">New Applicant</option>
-                    <option value="renewal">Renewal Scholar</option>
                   </select>
                   <ChevronDown aria-hidden="true" size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2" />
                 </span>

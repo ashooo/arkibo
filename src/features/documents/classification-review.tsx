@@ -3,14 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 import { Sparkles, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useStudent } from "@/lib/student-context";
 import type { StoredDocument } from "@/types/shared";
 import { documentCategories, isDocumentCategory } from "@/lib/ai/document-classification";
 import type { RequirementCandidate } from "@/lib/ai/document-classification";
 import { DocumentDialog, inputStyle } from "./document-ui";
 
 export function ClassificationReview({ documentId, onClose, onUpdated }: { documentId: string; onClose: () => void; onUpdated: (document: StoredDocument) => void }) {
-  const { applicationType } = useStudent();
   const [record, setRecord] = useState<StoredDocument | null>(null);
   const [requirements, setRequirements] = useState<RequirementCandidate[]>([]);
   const [category, setCategory] = useState("unclassified");
@@ -59,9 +57,11 @@ export function ClassificationReview({ documentId, onClose, onUpdated }: { docum
     finally { setSaving(false); }
   }
   async function attach(id: string) {
+    const match = requirements.find((entry) => entry.id === id);
+    if (!match?.listId) return;
     setSaving(true); setError("");
     try {
-      const response = await fetch(`/api/checklist/${encodeURIComponent(id)}/documents`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ applicationType, documentId }) });
+      const response = await fetch(`/api/checklist/${encodeURIComponent(id)}/documents`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ listId: match.listId, documentId }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? "Unable to attach document.");
       setNotice("Attached to the checklist. This does not mark the requirement as prepared or approved.");
@@ -83,7 +83,7 @@ export function ClassificationReview({ documentId, onClose, onUpdated }: { docum
         {suggestion && record.classificationConfirmedAt && suggestionDiffers && <div className="rounded-lg border border-slate-border p-3 text-sm dark:border-dark-border"><p className="font-semibold">AI suggestion: {documentCategories[suggestion.category]}</p><p className="mt-1 text-xs text-slate-500">{suggestion.tags.join(" · ") || "No suggested tags"}</p><p className="mt-1 text-xs text-slate-500">Your confirmed values have not changed.</p><Button type="button" size="sm" variant="secondary" className="mt-2" onClick={() => { dirty.current = true; setCategory(suggestion.category); setTags(suggestion.tags.join(", ")); }}>Use suggestion in form</Button></div>}
         <div className="flex flex-wrap gap-2"><Button variant="secondary" isLoading={analyzing} disabled={record.ocrStatus !== "complete" || saving} onClick={() => void analyze()}><Sparkles size={16} />Analyze again</Button><Button isLoading={saving} onClick={() => void confirm()}>Confirm category & tags</Button></div>
         {record.ocrStatus !== "complete" && <p className="text-xs text-slate-500">AI analysis becomes available after OCR finishes. Manual categorization is available now.</p>}
-        {!!matches.length && <section className="space-y-3 border-t border-slate-border pt-4 dark:border-dark-border"><h3 className="text-sm font-semibold">Possible checklist matches</h3><p className="text-xs text-slate-500">Suggestions for your current application track. Review the original before attaching.</p>{matches.map((entry) => <div key={entry.id} className="flex items-center justify-between gap-3 rounded-lg bg-surface p-3 dark:bg-dark-cardAlt"><span className="text-sm">{entry.title}</span><Button variant="secondary" size="sm" disabled={saving} onClick={() => void attach(entry.id)}><Link2 size={14} />Attach</Button></div>)}</section>}
+        {!!matches.length && <section className="space-y-3 border-t border-slate-border pt-4 dark:border-dark-border"><h3 className="text-sm font-semibold">Possible checklist matches</h3><p className="text-xs text-slate-500">Suggestions for your application folders. Review the original before attaching.</p>{matches.map((entry) => <div key={entry.id} className="flex items-center justify-between gap-3 rounded-lg bg-surface p-3 dark:bg-dark-cardAlt"><span className="min-w-0"><span className="block text-sm">{entry.title}</span><span className="block text-xs text-slate-500">{entry.listName}</span></span><Button variant="secondary" size="sm" disabled={saving} onClick={() => void attach(entry.id)}><Link2 size={14} />Attach</Button></div>)}</section>}
       </>}
     </div>
   </DocumentDialog>;

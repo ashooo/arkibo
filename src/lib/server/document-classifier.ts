@@ -2,23 +2,22 @@ import "server-only";
 import { createHash } from "node:crypto";
 import { and, asc, eq, isNull, lt, ne, or, sql } from "drizzle-orm";
 import { getDb } from "@/db/client";
-import { documents, requirements, students } from "@/db/schema";
-import { requirementTemplates } from "@/data/requirements";
+import { checklistLists, documents, requirements } from "@/db/schema";
 import { CLASSIFICATION_VERSION, classificationMessages, classificationSchemaFor, validateClassification, metadataSearchText, type RequirementCandidate } from "@/lib/ai/document-classification";
 import { qwenChat } from "@/lib/ai/ollama";
 
 export async function classificationCandidates(studentId: string) {
-  const [student] = await getDb().select().from(students).where(eq(students.id, studentId)).limit(1);
-  if (!student) throw new Error("Student profile not found.");
-  const custom = await getDb().select().from(requirements).where(and(eq(requirements.studentId, studentId), eq(requirements.applicationType, student.applicationType), isNull(requirements.templateKey))).orderBy(asc(requirements.sortOrder), asc(requirements.id)).limit(50);
-  return [...requirementTemplates.filter((entry) => entry.applicationType === student.applicationType), ...custom].map(({ id, title, description }) => ({ id, title, description }));
+  return getDb().select({ id: requirements.id, title: requirements.title, description: requirements.description, templateKey: requirements.templateKey, listId: checklistLists.id, listName: checklistLists.name })
+    .from(requirements).innerJoin(checklistLists, eq(checklistLists.id, requirements.checklistListId))
+    .where(and(eq(requirements.studentId, studentId), eq(checklistLists.studentId, studentId)))
+    .orderBy(asc(checklistLists.createdAt), asc(checklistLists.id), asc(requirements.sortOrder), asc(requirements.id)).limit(100);
 }
 
 /** Independent task: never receives or changes chat history, never invokes OCR. */
 export async function classifyOcrText(ocrText: string, candidates: RequirementCandidate[]) {
   if (!ocrText.trim()) throw new Error("No readable OCR text is available. Set a category manually or add a clearer document.");
   const messages = classificationMessages(ocrText, candidates);
-  const reply = await qwenChat(messages, { format: classificationSchemaFor(ocrText) });
+  const reply = await qwenChat(messages, { format: classificationSchemaFor(ocrText, candidates) });
   let parsed: unknown;
   try { parsed = JSON.parse(reply.content); } catch { throw new Error("Local AI returned an invalid classification. Please review this document manually."); }
   return validateClassification(parsed, ocrText.slice(0, 16000), candidates);
