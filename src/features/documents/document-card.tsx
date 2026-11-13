@@ -13,11 +13,11 @@ export function DocumentCard({ document, busy, onRemove, onStatus }: { document:
   const pdf = document.mimeType === "application/pdf";
   return <li className="group overflow-hidden rounded-xl border border-slate-border bg-white transition-shadow hover:shadow-card dark:border-dark-border dark:bg-dark-card">
     <a href={source} target="_blank" rel="noreferrer" aria-label={`Open ${document.originalName}`} className="block outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary">
-      <div aria-hidden="true" className="relative aspect-[4/5] overflow-hidden border-b border-slate-border bg-surface-low dark:border-dark-border dark:bg-dark-bg">
+      <div aria-hidden="true" className="relative aspect-[4/5] overflow-hidden border-b border-slate-border bg-white dark:border-dark-border">
         {image && !imageFailed ? (
           // Thumbnails use the protected account route without Next image optimization.
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={source} alt="" loading="lazy" onError={() => setImageFailed(true)} className="h-full w-full object-contain p-3 transition-transform duration-200 group-hover:scale-[1.02]" />
+          <img src={source} alt="" loading="lazy" onError={() => setImageFailed(true)} className="h-full w-full object-cover object-top transition-transform duration-200 group-hover:scale-[1.02]" />
         ) : pdf ? <iframe src={`${source}#page=1&toolbar=0&navpanes=0&scrollbar=0&view=FitH`} title={`Thumbnail of ${document.originalName}`} loading="lazy" tabIndex={-1} className="pointer-events-none h-full w-full border-0 bg-white" /> : <div className="flex h-full flex-col items-center justify-center gap-3 text-slate-400"><FileText size={64} strokeWidth={1} /><span className="text-xs font-semibold uppercase tracking-wider">{document.mimeType.split("/")[1] || "Document"}</span></div>}
       </div>
       <h2 className="truncate px-4 pt-4 text-sm font-semibold group-hover:text-primary dark:group-hover:text-dark-accent" title={document.originalName}>{document.originalName}</h2>
