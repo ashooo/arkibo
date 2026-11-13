@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     const formData = await request.formData();
     const file = formData.get("file");
     if (!(file instanceof File)) return NextResponse.json({ error: "A file field is required." }, { status: 400 });
-    const category = typeof formData.get("category") === "string" ? String(formData.get("category")).slice(0, 80) || "others" : "others";
+    const category = "unclassified";
     const studentId = access.studentId;
     storagePath = await storeUpload(file);
     const [record] = await getDb().insert(documents).values({ studentId, originalName: file.name, mimeType: file.type, storagePath, category }).returning();

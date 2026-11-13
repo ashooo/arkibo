@@ -9,8 +9,8 @@ export async function qwenChat(messages: ModelMessage[], options: { format?: obj
   const settings = qwenSettings();
   let response: Response;
   try {
-    const timeout = AbortSignal.timeout(90000);
-    response = await fetch(settings.url, { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", signal: options.signal ? AbortSignal.any([timeout, options.signal]) : timeout, body: JSON.stringify({ model: settings.model, messages, stream: false, think: false, keep_alive: "5m", ...(options.format ? { format: options.format } : {}), ...(options.tools ? { tools: options.tools } : {}), options: { temperature: options.format ? 0 : 0.4, num_predict: options.format ? 1400 : 1800, num_ctx: 8192 } }) });
+    const timeout = AbortSignal.timeout(180000);
+    response = await fetch(settings.url, { method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store", signal: options.signal ? AbortSignal.any([timeout, options.signal]) : timeout, body: JSON.stringify({ model: settings.model, messages, stream: false, think: false, keep_alive: "5m", ...(options.format ? { format: options.format } : {}), ...(options.tools ? { tools: options.tools } : {}), options: { temperature: options.format ? 0 : 0.4, ...(options.format ? { presence_penalty: 0, repeat_penalty: 1, top_p: 1 } : {}), num_predict: options.format ? 1400 : 1800, num_ctx: 8192 } }) });
   } catch { throw new Error("Local AI is unavailable or timed out. You can still save documents and edit their category manually."); }
   if (!response.ok) throw new Error("Local AI could not process this request. Check that Ollama and the configured model are running.");
   const result = await response.json();
