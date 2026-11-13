@@ -16,6 +16,12 @@ export function serializeDocument(record: DocumentRecord): StoredDocument {
     ocrStatus: record.ocrStatus,
     ocrError: record.ocrError,
     uploadedAt: record.uploadedAt.toISOString(),
+    tags: record.tags,
+    classification: record.classification,
+    classificationStatus: record.classificationStatus,
+    classificationError: record.classificationError,
+    classificationConfirmedAt: record.classificationConfirmedAt?.toISOString() ?? null,
+    metadataVersion: record.metadataVersion,
   };
 }
 

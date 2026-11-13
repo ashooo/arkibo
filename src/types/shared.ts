@@ -16,6 +16,12 @@ export interface StoredDocument {
   ocrStatus: OcrStatus;
   ocrError: string | null;
   uploadedAt: string;
+  tags: string[];
+  classification: import("@/lib/ai/document-classification").ClassificationSuggestion | null;
+  classificationStatus: string;
+  classificationError: string | null;
+  classificationConfirmedAt: string | null;
+  metadataVersion: number;
 }
 
 export interface ChecklistItem {

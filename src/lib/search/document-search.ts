@@ -10,6 +10,11 @@ const SYNONYMS: Record<string, readonly string[]> = {
   grades: ["ogr", "official grade report", "report of grades"],
   enrollment: ["certificate of enrollment", "certificate of registration"],
   tuition: ["tuition fee", "assessment of fees"],
+  "proof of enrollment": ["certificate of registration", "certificate of enrollment"],
+  "report card": ["official grade report", "academic records"],
+  itr: ["income tax return"],
+  "proof of income": ["income tax return"],
+  "proof of residency": ["certificate of residency", "barangay certificate"],
 };
 
 const IDENTIFIER_ALIASES = new Set(["cor", "cr", "coe", "ogr", "or", "id"]);
@@ -26,7 +31,9 @@ export function expandSearchTerms(query: string) {
     for (const equivalent of SYNONYMS[token] ?? []) expanded.add(normalizeSearchText(equivalent));
   }
   for (const [alias, equivalents] of Object.entries(SYNONYMS)) {
-    if (equivalents.some((equivalent) => original.includes(normalizeSearchText(equivalent)))) expanded.add(alias);
+    const includesPhrase = (phrase: string) => ` ${original} `.includes(` ${normalizeSearchText(phrase)} `);
+    if (includesPhrase(alias)) equivalents.forEach((equivalent) => expanded.add(normalizeSearchText(equivalent)));
+    if (equivalents.some(includesPhrase)) expanded.add(alias);
   }
   return [...expanded];
 }
@@ -36,10 +43,10 @@ export function isExactOnlySearch(query: string) {
   return /^\d{4,}$/.test(normalized) || /^[a-z]{1,6}\s?\d{2,6}$/.test(normalized) || IDENTIFIER_ALIASES.has(normalized);
 }
 
-export function matchTypeForDocument(input: { originalName: string; category: string; ocrText: string | null }, query: string, terms: string[]): SearchMatchType {
+export function matchTypeForDocument(input: { originalName: string; category: string; ocrText: string | null; searchMetadata?: string }, query: string, terms: string[]): SearchMatchType {
   const normalizedQuery = normalizeSearchText(query);
   const name = normalizeSearchText(input.originalName);
-  const category = normalizeSearchText(input.category);
+  const category = normalizeSearchText(`${input.category} ${input.searchMetadata ?? ""}`);
   const ocr = normalizeSearchText(input.ocrText ?? "");
   if (name === normalizedQuery) return "exact";
   if (category === normalizedQuery) return "category";
